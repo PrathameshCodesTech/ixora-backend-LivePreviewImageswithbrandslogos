@@ -1389,57 +1389,163 @@ class GenerateImageContentView(APIView):
             'Georgia': 'georgia.ttf',
             'Verdana': 'verdana.ttf',
             'Impact': 'impact.ttf',
-            'Comic Sans MS': 'comic.ttf'
+            'Comic Sans MS': 'comic.ttf',
+            'Dancing Script': 'DancingScript-Regular.ttf',
+            'Great Vibes': 'GreatVibes-Regular.ttf',
+            'Pacifico': 'Pacifico-Regular.ttf',
+            'Allura': 'Allura-Regular.ttf',
+            'Alex Brush': 'AlexBrush-Regular.ttf'
         }
 
-        def get_font(font_family, font_size):
-            font_file = FONT_MAP.get(font_family, 'arial.ttf')
-            try:
-                return ImageFont.truetype(font_file, font_size)
-            except:  # noqa: E722
+        def get_font(font_family, font_size, font_weight='normal', font_style='normal'):
+            base_font = FONT_MAP.get(font_family, 'arial.ttf')
+            
+            # For cursive fonts, use full path
+            if font_family in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                font_path = os.path.join(settings.BASE_DIR, "fonts", base_font)
+            else:
+                font_path = base_font
+            
+            # Handle font weight (bold) - only for non-cursive fonts
+            if font_weight == 'bold' and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                bold_font = font_path.replace('.ttf', 'bd.ttf')
                 try:
-                    return ImageFont.truetype("arial.ttf", font_size)
-                except:  # noqa: E722
-                    return ImageFont.load_default()
+                    font = ImageFont.truetype(bold_font, font_size)
+                except:
+                    try:
+                        font = ImageFont.truetype(font_path, font_size)
+                    except:
+                        font = ImageFont.load_default()
+            else:
+                try:
+                    font = ImageFont.truetype(font_path, font_size)
+                except:
+                    try:
+                        font = ImageFont.truetype("arial.ttf", font_size)
+                    except:
+                        font = ImageFont.load_default()
+            
+            return font
+        ##
+        # Combine city and state with comma if both exist
+        city_state = []
+        if content_data.get('doctor_city', doctor.city):
+            city_state.append(content_data.get('doctor_city', doctor.city))
+        if content_data.get('doctor_state', doctor.state):
+            city_state.append(content_data.get('doctor_state', doctor.state))
+        city_state_combined = ', '.join(city_state)
 
         all_text_data = {
             'name': content_data.get('doctor_name', doctor.name),
             'clinic': content_data.get('doctor_clinic', doctor.clinic),
-            'city': content_data.get('doctor_city', doctor.city),
+            'city': city_state_combined,  # Combined city, state
             'specialization': content_data.get('doctor_specialization', doctor.specialization),
-            'state': content_data.get('doctor_state', doctor.state),
             'mobile': doctor.mobile_number,
             'customText': template.custom_text or '',
         }
 
-        # Draw each mapped field
-        for field_name, text_value in all_text_data.items():
-            if field_name in positions and text_value:
+        # DOCTOR FIELDS RESPONSIVE CENTER ALIGNMENT (removed 'state' since it's now combined with city)
+        doctor_fields = ['name', 'specialization', 'clinic', 'city']
+        doctor_text_data = {field: all_text_data[field] for field in doctor_fields if field in all_text_data and all_text_data[field] and field in positions}
+
+        if doctor_text_data:
+            print(f"🎯 Processing doctor fields for center alignment: {list(doctor_text_data.keys())}")
+            
+            # Calculate text widths for center alignment
+            field_widths = {}
+            field_fonts = {}
+            
+            for field_name, text_value in doctor_text_data.items():
                 pos = positions[field_name]
                 font_size = int(pos.get('fontSize', 40))
-                color = pos.get('color', 'black')
                 font_weight = pos.get('fontWeight', 'normal')
                 font_family = pos.get('fontFamily', 'Arial')
+                font_style = pos.get('fontStyle', 'normal')
+                
+                styled_font = get_font(font_family, font_size, font_weight, font_style)
+                field_fonts[field_name] = styled_font
+                
+                # Calculate text width using textbbox
+                bbox = draw.textbbox((0, 0), str(text_value), font=styled_font)
+                text_width = bbox[2] - bbox[0]
+                field_widths[field_name] = text_width
+                print(f"🎯 Field {field_name}: '{text_value}' = {text_width}px wide")
+            
+            # Find the widest text to base centering on
+            max_width = max(field_widths.values())
+            widest_field = max(field_widths, key=field_widths.get)
+            print(f"🎯 Widest field: {widest_field} ({max_width}px)")
+            
+            # Get base position from widest field
+            # Calculate the visual center point of the template
+            template_center_x = template_image.width // 2
 
-                styled_font = get_font(font_family, font_size)
-                if font_weight == 'bold':
-                    try:
-                        bold_font_file = FONT_MAP.get(font_family, 'arial.ttf').replace('.ttf', 'bd.ttf')
-                        styled_font = ImageFont.truetype(bold_font_file, font_size)
-                    except:  # noqa: E722
-                        styled_font = get_font(font_family, font_size)
-
+            # Calculate center-aligned positions for all doctor fields
+            for field_name, text_value in doctor_text_data.items():
+                pos = positions[field_name]
+                field_width = field_widths[field_name]
+                styled_font = field_fonts[field_name]
+                
+                # Center each field based on template center, not relative to other fields
+                centered_x = template_center_x - (field_width // 2)
+                y_pos = int(pos['y'])  # Keep original Y position                
+                print(f"🎯 Rendering {field_name} at centered position ({centered_x}, {y_pos})")
+                
+                # Apply styling
+                color = pos.get('color', 'black')
+                font_style = pos.get('fontStyle', 'normal')
+                
+                # Text shadow
                 text_shadow = pos.get('textShadow', 'none')
                 if text_shadow != 'none':
                     shadow_info = parse_css_shadow(text_shadow)
                     if shadow_info:
                         draw.text(
-                            (int(pos['x']) + shadow_info['offset_x'], int(pos['y']) + shadow_info['offset_y']),
+                            (centered_x + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
                             str(text_value), fill=shadow_info['color'], font=styled_font
                         )
+                
+                # Render text with center alignment
+                # For cursive fonts, no need for italic simulation - they're naturally cursive
+                # For non-cursive fonts with italic style, apply simulation
+                if font_style in ['italic', 'oblique'] and pos.get('fontFamily', 'Arial') not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                    for offset in range(3):
+                        draw.text((centered_x + offset, y_pos), str(text_value), fill=color, font=styled_font)
+                else:
+                    draw.text((centered_x, y_pos), str(text_value), fill=color, font=styled_font)
 
-                draw.text((int(pos['x']), int(pos['y'])), str(text_value), fill=color, font=styled_font)
+        # Handle custom text separately (not part of doctor info centering)
+        # Handle custom text separately (not part of doctor info centering) - FIXED POSITION
+        if 'customText' in all_text_data and 'customText' in positions and all_text_data['customText']:
+            field_name = 'customText'
+            text_value = all_text_data[field_name]
+            pos = positions[field_name]
+            font_size = int(pos.get('fontSize', 40))
+            color = pos.get('color', 'black')
+            font_weight = pos.get('fontWeight', 'normal')
+            font_family = pos.get('fontFamily', 'Arial')
+            font_style = pos.get('fontStyle', 'normal')
 
+            styled_font = get_font(font_family, font_size, font_weight, font_style)
+
+            # Use original fixed position for custom text (no responsive centering)
+            x_pos = int(pos['x'])
+            y_pos = int(pos['y'])
+
+            text_shadow = pos.get('textShadow', 'none')
+            if text_shadow != 'none':
+                shadow_info = parse_css_shadow(text_shadow)
+                if shadow_info:
+                    draw.text(
+                        (x_pos + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
+                        str(text_value), fill=shadow_info['color'], font=styled_font
+                    )
+
+            if font_style in ['italic', 'oblique'] and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                for offset in range(3):
+                    draw.text((x_pos + offset, y_pos), str(text_value), fill=color, font=styled_font)
+            else:
+                draw.text((x_pos, y_pos), str(text_value), fill=color, font=styled_font)
         # Optional doctor image overlay
         image_settings = None
         if content_data and 'imageSettings' in content_data:
@@ -1577,7 +1683,7 @@ class GenerateImageContentView(APIView):
     
 
     def render_brands_in_area(self, template_image, brands, area_settings):
-        """Render brands in a predefined rectangular area with smart wrapping layout"""
+        """Render brands using predefined slots with smart centering"""
         print(f"🔍 INSIDE render_brands_in_area with {brands.count()} brands")
         print(f"🔍 Area settings: {area_settings}")
         
@@ -1589,110 +1695,76 @@ class GenerateImageContentView(APIView):
         area_y = area_settings.get('y', 400)
         area_width = area_settings.get('width', 700)
         area_height = area_settings.get('height', 150)
-        brand_width = area_settings.get('brandWidth', 200)
-        brand_height = area_settings.get('brandHeight', 100)
+        slots = area_settings.get('slots', [])
         
-
-        # --- SCALE FROM EDITOR CANVAS TO TEMPLATE PIXELS ---
-        tpl_w, tpl_h = template_image.size
-        cw = area_settings.get('canvasWidth')
-        ch = area_settings.get('canvasHeight')
-
-        # Safely coerce to float if present
-        try:
-            cw = float(cw) if cw is not None else None
-            ch = float(ch) if ch is not None else None
-        except (TypeError, ValueError):
-            cw = ch = None
-
-        if cw and ch and cw > 0 and ch > 0:
-            sx = float(tpl_w) / cw
-            sy = float(tpl_h) / ch
-
-            area_x = int(round(float(area_x) * sx))
-            area_y = int(round(float(area_y) * sy))
-            area_width = int(round(float(area_width) * sx))
-            area_height = int(round(float(area_height) * sy))
-            brand_width = int(round(float(brand_width) * sx))
-            brand_height = int(round(float(brand_height) * sy))
-
-        # Clamp to image bounds to avoid overflow
-        area_x = max(0, min(area_x, max(0, tpl_w - 1)))
-        area_y = max(0, min(area_y, max(0, tpl_h - 1)))
-        area_width = max(1, min(area_width, tpl_w - area_x))
-        area_height = max(1, min(area_height, tpl_h - area_y))
-        brand_width = max(1, min(brand_width, area_width))
-        brand_height = max(1, min(brand_height, area_height))
-
+        if not slots:
+            print("🔍 No slots defined, exiting")
+            return
+        
         print(f"🔍 Area position: ({area_x}, {area_y})")
         print(f"🔍 Area size: {area_width}x{area_height}")
-        print(f"🔍 Brand size: {brand_width}x{brand_height}")
-
-
-        print(f"🔍 Area position: ({area_x}, {area_y})")
-        print(f"🔍 Area size: {area_width}x{area_height}")
-        print(f"🔍 Brand size: {brand_width}x{brand_height}")
+        print(f"🔍 Available slots: {len(slots)}")
         
-        # Calculate layout - brands per row and spacing
-        horizontal_spacing = 10
-        vertical_spacing = 10
-        brands_per_row = max(1, (area_width + horizontal_spacing) // (brand_width + horizontal_spacing))
+        # Get only the slots we need (based on number of brands)
+        brands_list = list(brands)
+        needed_slots = slots[:len(brands_list)]
         
-        current_x = area_x
-        current_y = area_y
-        brands_in_current_row = 0
+        print(f"🔍 Using {len(needed_slots)} slots for {len(brands_list)} brands")
         
-        logger.info(f"Brand area: {area_width}x{area_height} at ({area_x},{area_y})")
-        logger.info(f"Brand size: {brand_width}x{brand_height}, {brands_per_row} per row")
+        # Calculate bounding box of needed slots for centering
+        if len(needed_slots) < len(slots):
+            min_x = min(slot['x'] for slot in needed_slots)
+            max_x = max(slot['x'] + slot['width'] for slot in needed_slots)
+            min_y = min(slot['y'] for slot in needed_slots)
+            max_y = max(slot['y'] + slot['height'] for slot in needed_slots)
+            
+            used_width = max_x - min_x
+            used_height = max_y - min_y
+            
+            # Calculate centering offset
+            center_offset_x = (area_width - used_width) // 2 - min_x
+            center_offset_y = (area_height - used_height) // 2 - min_y
+            
+            print(f"🔍 Centering offset: ({center_offset_x}, {center_offset_y})")
+        else:
+            # Using all slots, no centering needed
+            center_offset_x = 0
+            center_offset_y = 0
         
-        for brand in brands:
-            print(f"🔍 Processing brand: {brand.name}")
-            print(f"🔍 Brand position: ({current_x}, {current_y})")
+        # Render brands in slots
+        for i, (brand, slot) in enumerate(zip(brands_list, needed_slots)):
+            print(f"🔍 Processing brand {i+1}: {brand.name}")
+            
             if brand.brand_image and brand.brand_image.path and os.path.exists(brand.brand_image.path):
                 try:
-                    # Check if we need to go to next row
-                    if brands_in_current_row >= brands_per_row:
-                        current_y += brand_height + vertical_spacing
-                        current_x = area_x
-                        brands_in_current_row = 0
-                        
-                    # Check if we're still within area bounds
-                    if current_y + brand_height > area_y + area_height:
-                        logger.warning("Ran out of vertical space for brands")
-                        break
+                    # Calculate final position with centering offset
+                    final_x = area_x + slot['x'] + center_offset_x
+                    final_y = area_y + slot['y'] + center_offset_y
+                    slot_width = slot['width']
+                    slot_height = slot['height']
+                    
+                    print(f"🔍 Slot {i+1} position: ({final_x}, {final_y})")
+                    print(f"🔍 Slot {i+1} size: {slot_width}x{slot_height}")
                     
                     # Load and resize brand image
                     brand_img = Image.open(brand.brand_image.path)
-                    print(f"🔍 Original brand image mode: {brand_img.mode}")
-                    print(f"🔍 Original brand image size: {brand_img.size}")
-
                     if brand_img.mode != 'RGBA':
                         brand_img = brand_img.convert('RGBA')
-                        print("🔍 Converted template image to RGBA")
-                    brand_img = brand_img.resize((brand_width, brand_height), Image.Resampling.LANCZOS)
                     
-
-                    print(f"🔍 Processed brand image mode: {brand_img.mode}")
-                    print(f"🔍 Processed brand image size: {brand_img.size}")
-
+                    brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
                     
                     # Paste brand image
                     if template_image.mode != 'RGBA':
                         template_image = template_image.convert('RGBA')
-                        print("🔍 Converted template image to RGBA")
-                    template_image.paste(brand_img, (current_x, current_y), brand_img)
                     
-                    logger.info(f"Rendered brand {brand.name} at ({current_x}, {current_y})")
-                    print(f"🔍 Successfully pasted brand {brand.name} at ({current_x}, {current_y})")
+                    template_image.paste(brand_img, (final_x, final_y), brand_img)
                     
-                    # Move to next position
-                    current_x += brand_width + horizontal_spacing
-                    brands_in_current_row += 1
+                    logger.info(f"Rendered brand {brand.name} in slot {i+1} at ({final_x}, {final_y})")
+                    print(f"🔍 Successfully pasted brand {brand.name} at ({final_x}, {final_y})")
                     
                 except Exception as e:
                     print(f"🔍 Failed to render brand {brand.name}: {e}")
                     logger.error(f"Failed to render brand {brand.name}: {e}")
-
 
 class ImageContentListView(APIView):
     """List generated image contents with pagination"""
