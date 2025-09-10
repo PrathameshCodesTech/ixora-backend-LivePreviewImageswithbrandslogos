@@ -120,25 +120,16 @@ class VideoTemplates(models.Model):
     template_image = models.ImageField(upload_to='image-templates/', null=True, blank=True)
     text_positions = models.JSONField(null=True, blank=True, help_text="JSON format: {'field_name': {'x': 100, 'y': 50}}")
     custom_text = models.TextField(null=True, blank=True, help_text="Template's default text like 'Good Morning'")  # ADD THIS
-    selected_brands = models.ManyToManyField('Brand', through='TemplateBrandPosition',
-        related_name='templates', blank=True, help_text="Brands associated with this template and their positions")
-    
+
+
+    brand_area_settings = models.JSONField(
+        null=True, blank=True, 
+        help_text="Brand placement area: {'enabled': True, 'x': 50, 'y': 400, 'width': 700, 'height': 150, 'brandWidth': 100, 'brandHeight': 60}"
+    )    
     def __str__(self):
         return f"Video for {self.template_video} and {self.template_image}"
 
-class TemplateBrandPosition(models.Model):
-    template = models.ForeignKey('VideoTemplates', on_delete=models.CASCADE)
-    brand = models.ForeignKey('Brand', on_delete=models.CASCADE)
-    x = models.IntegerField(default=0)
-    y = models.IntegerField(default=0)
-    width = models.IntegerField(default=100)
-    height = models.IntegerField(default=100)
 
-    class Meta:
-        unique_together = ('template', 'brand')
-
-    def __str__(self):
-        return f"{self.template.name} → {self.brand.name} @ ({self.x}, {self.y})"
 
 #! Added By Prathamesh-
 
@@ -198,10 +189,24 @@ class DoctorOutputVideo(models.Model):
 
     def __str__(self):
         return f"Video for {self.doctor_video.name} - {self.id}"
+    
+
 
 class Brand(models.Model):
+    CATEGORY_CHOICES = [
+        ('PAIN', 'Pain'),
+        ('STROKE_PREVENTION', 'In Prevention of Stroke'),
+        ('NEURO_PROTECTORS', 'Neuro-Protectors'),
+        ('MIGRAINE_VERTIGO', 'Migraine & Vertigo'),
+        ('ANTI_PSYCHOTICS', 'Anti-Psychotics'),
+        ('ANTI_DEPRESSANT', 'Anti-Depressant'),
+        ('ANTI_EPILEPTIC', 'Anti-Epileptic'),
+        ('SEDATIVES', 'Sedatives / Anti Anxiolytics'),
+    ]
+    
     name = models.CharField(max_length=100)
     brand_image = models.ImageField(upload_to='brand-images/')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='PAIN')
     uploaded_by = models.ForeignKey(
         'Employee',
         on_delete=models.CASCADE,
@@ -210,4 +215,4 @@ class Brand(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} ({self.get_category_display()})"

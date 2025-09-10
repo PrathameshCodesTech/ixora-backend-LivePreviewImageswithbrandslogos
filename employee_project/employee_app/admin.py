@@ -13,7 +13,7 @@
 
 #! Prathamesh
 from django.contrib import admin
-from .models import Employee, EmployeeLoginHistory, DoctorVideo, Doctor, VideoTemplates, DoctorOutputVideo, ImageContent, Brand,TemplateBrandPosition
+from .models import Employee, EmployeeLoginHistory, DoctorVideo, Doctor, VideoTemplates, DoctorOutputVideo, ImageContent, Brand
 
 # Employee Admin
 @admin.register(Employee)
@@ -122,21 +122,16 @@ class DoctorVideoAdmin(admin.ModelAdmin):
     has_image_contents.boolean = True
     has_image_contents.short_description = 'Has Generated Images'
 
-class TemplateBrandPositionInline(admin.TabularInline):
-    model = TemplateBrandPosition
-    extra = 1
-    fields = ('brand', 'x', 'y','width','height')
-    autocomplete_fields = ['brand']
+
 
 # VideoTemplates Admin
 @admin.register(VideoTemplates)
 class VideoTemplatesAdmin(admin.ModelAdmin):
-    list_display = ['name', 'template_type', 'status', 'created_at', 'has_video', 'has_image','associated_brands']
+    list_display = ['name', 'template_type', 'status', 'created_at', 'has_video', 'has_image', 'has_brand_area']
     list_filter = ['template_type', 'status', 'created_at']
     search_fields = ['name']
     ordering = ['-created_at']
     readonly_fields = ['created_at']
-    inlines = [TemplateBrandPositionInline]
     
     fieldsets = (
         ('Basic Information', {
@@ -148,7 +143,7 @@ class VideoTemplatesAdmin(admin.ModelAdmin):
             'description': 'Settings specific to video templates'
         }),
         ('Image Template Settings', {
-            'fields': ('template_image', 'text_positions'),
+            'fields': ('template_image', 'text_positions', 'custom_text', 'brand_area_settings'),
             'classes': ('collapse',),
             'description': 'Settings specific to image templates. Text positions should be JSON format: {"field_name": {"x": 100, "y": 50}}'
         }),
@@ -164,11 +159,10 @@ class VideoTemplatesAdmin(admin.ModelAdmin):
     has_image.boolean = True
     has_image.short_description = 'Has Image File'
 
-    def associated_brands(self, obj):
-        return ", ".join([
-        bp.brand.name for bp in obj.templatebrandposition_set.all()
-    ]) or "—"
-    associated_brands.short_description = "Brands"
+    def has_brand_area(self, obj):
+        return bool(obj.brand_area_settings and obj.brand_area_settings.get('enabled', False))
+    has_brand_area.boolean = True
+    has_brand_area.short_description = 'Has Brand Area'
 
 # DoctorOutputVideo Admin
 @admin.register(DoctorOutputVideo)
@@ -254,23 +248,12 @@ class ImageContentAdmin(admin.ModelAdmin):
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'uploaded_by','brand_image', 'uploaded_at')
+    list_display = ('name', 'category', 'uploaded_by', 'uploaded_at')
+    list_filter = ('category', 'uploaded_by', 'uploaded_at')
     search_fields = ('name', 'uploaded_by__first_name', 'uploaded_by__last_name')
+    ordering = ('category', 'name')
 
-@admin.register(TemplateBrandPosition)
-class BrandPosition(admin.ModelAdmin):
-    list_display = ('template_name', 'brand_name', 'x', 'y')
-    list_filter = ('template__name', 'brand__name')
-    list_editable = ('x', 'y')
 
-    def template_name(self, obj):
-        return obj.template.name
-
-    def brand_name(self, obj):
-        return obj.brand.name
-
-    template_name.short_description = "Template"
-    brand_name.short_description = "Brand"
 
 # Additional Admin Customizations
 admin.site.site_header = "Employee Management System"

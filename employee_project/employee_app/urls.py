@@ -2,7 +2,7 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 
-from .views import VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,RegenerateContentView,DoctorUpdateDeleteView,BrandListAPIView,TemplateBrandPositionCreateView
+from .views import VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,RegenerateContentView,DoctorUpdateDeleteView,BrandListAPIView
 
 
 from rest_framework_simplejwt.views import ( # type: ignore
@@ -70,5 +70,4 @@ urlpatterns = [
 
     path('api/brands/', BrandListAPIView.as_view(), name='brand-list'),
 
-    path('api/brand-position/', TemplateBrandPositionCreateView.as_view(), name='brand-position-create'),
 ]

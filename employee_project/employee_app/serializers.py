@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Doctor,Employee,DoctorVideo,VideoTemplates,DoctorOutputVideo,ImageContent,Brand, TemplateBrandPosition
+from .models import Doctor,Employee,DoctorVideo,VideoTemplates,DoctorOutputVideo,ImageContent,Brand
 
 
 class EmployeeLoginSerializer(serializers.Serializer):
@@ -186,7 +186,7 @@ class ImageTemplateSerializer(serializers.ModelSerializer):
         model = VideoTemplates
         fields = [
             'id', 'name', 'template_image', 'text_positions', 
-            'custom_text', 'status', 'created_at', 'template_image_url'  # ADD custom_text HERE
+            'custom_text', 'brand_area_settings', 'status', 'created_at', 'template_image_url'
         ]
         extra_kwargs = {
             'template_type': {'default': 'image'}
@@ -206,25 +206,10 @@ class ImageTemplateSerializer(serializers.ModelSerializer):
         return data
 
 class BrandSerializer(serializers.ModelSerializer):
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
     uploaded_by = serializers.StringRelatedField()
 
     class Meta:
         model = Brand
-        fields = ['id', 'name', 'brand_image', 'uploaded_by', 'uploaded_at']
+        fields = ['id', 'name', 'brand_image', 'category', 'category_display', 'uploaded_by', 'uploaded_at']
 
-class TemplateBrandPositionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TemplateBrandPosition
-        fields = ['template', 'brand', 'x', 'y', 'width', 'height']
-        extra_kwargs = {
-            'x': {'required': True},
-            'y': {'required': True},
-            'width': {'required': True},
-            'height': {'required': True},
-        }
-
-    def validate(self, data):
-        # Optional: Add custom validation logic here
-        if data['width'] <= 0 or data['height'] <= 0:
-            raise serializers.ValidationError("Width and height must be positive integers.")
-        return data

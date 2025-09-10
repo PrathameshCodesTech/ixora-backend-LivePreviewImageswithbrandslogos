@@ -38,7 +38,7 @@ from .models import (
     DoctorOutputVideo,
     ImageContent,
     Brand,
-    TemplateBrandPosition
+    
 )
 from .serializers import (
     EmployeeLoginSerializer,
@@ -50,7 +50,7 @@ from .serializers import (
     ImageContentSerializer,
     ImageTemplateSerializer,
     BrandSerializer,
-    TemplateBrandPositionSerializer
+    
 )
 
 # Celery task
@@ -1250,27 +1250,20 @@ class GenerateImageContentView(APIView):
         content_data = request.data.get("content_data", {})
         selected_brand_ids = request.data.get("selected_brands", [])
 
-        if not template_id:
-            return Response({"error": "template_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-        if not doctor_id and not (mobile and name):
-            return Response({"error": "Either doctor_id OR (mobile + name) is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
         if not isinstance(selected_brand_ids, list) or not all(isinstance(bid, int) for bid in selected_brand_ids):
             return Response({"error": "selected_brands must be a list of brand IDs."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(selected_brand_ids) > 6:
-            return Response({"error": "You can select up to 6 brands only."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(selected_brand_ids) > 10:
+            return Response({"error": "You can select up to 10 brands only."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             template = VideoTemplates.objects.get(id=template_id, template_type='image')
         except VideoTemplates.DoesNotExist:
             return Response({"error": "Image template not found."}, status=status.HTTP_404_NOT_FOUND)
-
-         # Associate selected brands with the template
-        if selected_brand_ids:
-            brands = Brand.objects.filter(id__in=selected_brand_ids)
-            template.selected_brands.set(brands)
-            template.save()
+        
+        print(f"🔍 Template brand_area_settings: {template.brand_area_settings}")
+        print(f"🔍 Selected brand IDs: {selected_brand_ids}")
+        
 
         # Scenario 1: Existing DoctorVideo by ID
         is_new_doctor = False
@@ -1327,7 +1320,8 @@ class GenerateImageContentView(APIView):
             return Response({"error": "Template image file not found."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            output_path = self.generate_image_with_text(template, content_data, doctor_video)
+            print(f"🔍 About to call generate_image_with_text with brand IDs: {selected_brand_ids}")
+            output_path = self.generate_image_with_text(template, content_data, doctor_video, selected_brand_ids)
             image_content = ImageContent.objects.create(
                 template=template,
                 doctor=doctor_video,
@@ -1347,10 +1341,15 @@ class GenerateImageContentView(APIView):
                 'has_image': bool(doctor_video.image),
                 'is_new_doctor': is_new_doctor
             }
-            resp['selected_brands'] = [
-                {'id': b.id, 'name': b.name}
-                for b in template.selected_brands.all()
-            ]
+            if selected_brand_ids:
+                selected_brands = Brand.objects.filter(id__in=selected_brand_ids)
+                resp['selected_brands'] = [
+                    {'id': b.id, 'name': b.name, 'category': b.category}
+                    for b in selected_brands
+                ]
+            else:
+                resp['selected_brands'] = []
+
 
             return Response(resp, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -1360,7 +1359,8 @@ class GenerateImageContentView(APIView):
                 logger.error(f"Template image path: {template.template_image.path}")
             return Response({"error": "Image generation failed.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def generate_image_with_text(self, template, content_data, doctor):
+    def generate_image_with_text(self, template, content_data, doctor, selected_brand_ids=None):
+        print(f"🔍 ENTERED generate_image_with_text with brand IDs parameter: {selected_brand_ids}")
         logger.info(f"Starting image generation for template {template.id}")
         logger.info(f"Template image field: {template.template_image}")
         logger.info(f"Template image path: {template.template_image.path if template.template_image else 'None'}")
@@ -1508,60 +1508,190 @@ class GenerateImageContentView(APIView):
 
         output_dir = os.path.join(settings.MEDIA_ROOT, "temp")
 
-        # Render brands using TemplateBrandPosition model
-        # Render brands using TemplateBrandPosition model
-        # DEBUG: Check what templates and brands exist
-        logger.info(f"Template ID: {template.id}, Template name: {template.name}")
-        all_brand_positions = TemplateBrandPosition.objects.all()
-        logger.info(f"Total brand positions in database: {all_brand_positions.count()}")
-        for bp in all_brand_positions:
-            logger.info(f"  - Template {bp.template.id}: Brand {bp.brand.name} at ({bp.x}, {bp.y})")
-
-        # Render brands using TemplateBrandPosition model
-        brand_positions = TemplateBrandPosition.objects.filter(template=template).select_related('brand')
-        logger.info(f"Found {brand_positions.count()} brand positions for template {template.id}")
+        # Render brands in predefined area with smart layout
+# Render brands in predefined area with smart layout
+        if selected_brand_ids is None:
+            selected_brand_ids = content_data.get('selected_brands', [])
         
-        for brand_pos in brand_positions:
-            brand = brand_pos.brand
-            logger.info(f"Processing brand: {brand.name}, image path: {brand.brand_image.path if brand.brand_image else 'None'}")
+        print(f"🔍 Final selected_brand_ids after processing: {selected_brand_ids}")
+        print(f"🔍 Template brand_area_settings: {template.brand_area_settings}")
+        print(f"🔍 Brand area enabled: {template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
+        logger.info(f"Template ID: {template.id}, Template name: {template.name}")
+        logger.info(f"Brand area settings: {template.brand_area_settings}")
+        logger.info(f"Selected brand IDs: {selected_brand_ids}")
+        
+        print(f"🔍 Checking condition: selected_brand_ids={bool(selected_brand_ids)}, has_area_settings={bool(template.brand_area_settings)}, area_enabled={template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
+
+        if selected_brand_ids and template.brand_area_settings and template.brand_area_settings.get('enabled', False):
+            print("🔍 CONDITION MET - About to render brands")
+            print(f"🔍 Rendering {len(selected_brand_ids)} brands in defined area")
+            brands = Brand.objects.filter(id__in=selected_brand_ids)
+            print(f"🔍 Found {brands.count()} brands to render")
             
-            if brand.brand_image:
-                brand_image_path = brand.brand_image.path
-                logger.info(f"Brand image full path: {brand_image_path}")
-                
-                if os.path.exists(brand_image_path):
-                    try:
-                        # Open and process brand image
-                        brand_img = Image.open(brand_image_path)
-                        
-                        # Convert to RGBA if needed
-                        if brand_img.mode != 'RGBA':
-                            brand_img = brand_img.convert('RGBA')
-                        
-                        # Resize brand image to specified dimensions
-                        brand_img = brand_img.resize((brand_pos.width, brand_pos.height), Image.Resampling.LANCZOS)
-                        
-                        # Ensure template image is in RGBA mode for proper alpha blending
-                        if template_image.mode != 'RGBA':
-                            template_image = template_image.convert('RGBA')
+            # ADD DETAILED DEBUG
+            for brand in brands:
+                print(f"🔍 Brand: {brand.name}, Image: {brand.brand_image}")
+                if brand.brand_image:
+                    print(f"🔍 Brand image path: {brand.brand_image.path}")
+                    print(f"🔍 Path exists: {os.path.exists(brand.brand_image.path)}")
+            
+            print(f"🔍 About to call render_brands_in_area with area: {template.brand_area_settings}")
+            
+            try:
+                # Ensure template_image is in RGBA mode before brand rendering
+                if template_image.mode != 'RGBA':
+                    template_image = template_image.convert('RGBA')
+                    
+                self.render_brands_in_area(template_image, brands, template.brand_area_settings)
+                print("🔍 Successfully finished calling render_brands_in_area")
+            except Exception as e:
+                print(f"🔍 ERROR in render_brands_in_area: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("🔍 CONDITION FAILED - Brand rendering skipped")
+            if not selected_brand_ids:
+                logger.info("No brands selected")
+                print("🔍 - No selected_brand_ids")
+            elif not template.brand_area_settings:
+                logger.info("No brand area settings defined for template")
+                print("🔍 - No brand_area_settings")
+            elif not template.brand_area_settings.get('enabled', False):
+                logger.info("Brand area not enabled for template")
+                print("🔍 - Brand area not enabled")
 
-                        # Paste brand image onto template
-                        template_image.paste(brand_img, (brand_pos.x, brand_pos.y), brand_img)
-                        logger.info(f"Successfully rendered brand {brand.name} at ({brand_pos.x}, {brand_pos.y}) with size {brand_pos.width}x{brand_pos.height}")
-                        
-                    except Exception as e:
-                        logger.error(f"Failed to render brand {brand.name}: {e}")
-                        import traceback
-                        logger.error(f"Brand rendering traceback: {traceback.format_exc()}")
-                else:
-                    logger.warning(f"Brand image file does not exist: {brand_image_path}")
-            else:
-                logger.warning(f"Brand {brand.name} has no brand_image field set")
-
+        # Save the final image AFTER all operations including brand rendering
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, f"temp_image_{uuid.uuid4().hex}.png")
-        template_image.save(output_path)
+        
+        # Convert to RGB before saving to ensure compatibility
+        if template_image.mode == 'RGBA':
+            # Create white background and paste RGBA image on it
+            rgb_image = Image.new('RGB', template_image.size, (255, 255, 255))
+            rgb_image.paste(template_image, mask=template_image.split()[-1])
+            rgb_image.save(output_path)
+        else:
+            template_image.save(output_path)
+        
         return output_path
+    
+
+    def render_brands_in_area(self, template_image, brands, area_settings):
+        """Render brands in a predefined rectangular area with smart wrapping layout"""
+        print(f"🔍 INSIDE render_brands_in_area with {brands.count()} brands")
+        print(f"🔍 Area settings: {area_settings}")
+        
+        if not brands or not area_settings.get('enabled'):
+            print("🔍 Exiting early - no brands or area not enabled")
+            return
+            
+        area_x = area_settings.get('x', 50)
+        area_y = area_settings.get('y', 400)
+        area_width = area_settings.get('width', 700)
+        area_height = area_settings.get('height', 150)
+        brand_width = area_settings.get('brandWidth', 200)
+        brand_height = area_settings.get('brandHeight', 100)
+        
+
+        # --- SCALE FROM EDITOR CANVAS TO TEMPLATE PIXELS ---
+        tpl_w, tpl_h = template_image.size
+        cw = area_settings.get('canvasWidth')
+        ch = area_settings.get('canvasHeight')
+
+        # Safely coerce to float if present
+        try:
+            cw = float(cw) if cw is not None else None
+            ch = float(ch) if ch is not None else None
+        except (TypeError, ValueError):
+            cw = ch = None
+
+        if cw and ch and cw > 0 and ch > 0:
+            sx = float(tpl_w) / cw
+            sy = float(tpl_h) / ch
+
+            area_x = int(round(float(area_x) * sx))
+            area_y = int(round(float(area_y) * sy))
+            area_width = int(round(float(area_width) * sx))
+            area_height = int(round(float(area_height) * sy))
+            brand_width = int(round(float(brand_width) * sx))
+            brand_height = int(round(float(brand_height) * sy))
+
+        # Clamp to image bounds to avoid overflow
+        area_x = max(0, min(area_x, max(0, tpl_w - 1)))
+        area_y = max(0, min(area_y, max(0, tpl_h - 1)))
+        area_width = max(1, min(area_width, tpl_w - area_x))
+        area_height = max(1, min(area_height, tpl_h - area_y))
+        brand_width = max(1, min(brand_width, area_width))
+        brand_height = max(1, min(brand_height, area_height))
+
+        print(f"🔍 Area position: ({area_x}, {area_y})")
+        print(f"🔍 Area size: {area_width}x{area_height}")
+        print(f"🔍 Brand size: {brand_width}x{brand_height}")
+
+
+        print(f"🔍 Area position: ({area_x}, {area_y})")
+        print(f"🔍 Area size: {area_width}x{area_height}")
+        print(f"🔍 Brand size: {brand_width}x{brand_height}")
+        
+        # Calculate layout - brands per row and spacing
+        horizontal_spacing = 10
+        vertical_spacing = 10
+        brands_per_row = max(1, (area_width + horizontal_spacing) // (brand_width + horizontal_spacing))
+        
+        current_x = area_x
+        current_y = area_y
+        brands_in_current_row = 0
+        
+        logger.info(f"Brand area: {area_width}x{area_height} at ({area_x},{area_y})")
+        logger.info(f"Brand size: {brand_width}x{brand_height}, {brands_per_row} per row")
+        
+        for brand in brands:
+            print(f"🔍 Processing brand: {brand.name}")
+            print(f"🔍 Brand position: ({current_x}, {current_y})")
+            if brand.brand_image and brand.brand_image.path and os.path.exists(brand.brand_image.path):
+                try:
+                    # Check if we need to go to next row
+                    if brands_in_current_row >= brands_per_row:
+                        current_y += brand_height + vertical_spacing
+                        current_x = area_x
+                        brands_in_current_row = 0
+                        
+                    # Check if we're still within area bounds
+                    if current_y + brand_height > area_y + area_height:
+                        logger.warning("Ran out of vertical space for brands")
+                        break
+                    
+                    # Load and resize brand image
+                    brand_img = Image.open(brand.brand_image.path)
+                    print(f"🔍 Original brand image mode: {brand_img.mode}")
+                    print(f"🔍 Original brand image size: {brand_img.size}")
+
+                    if brand_img.mode != 'RGBA':
+                        brand_img = brand_img.convert('RGBA')
+                        print("🔍 Converted template image to RGBA")
+                    brand_img = brand_img.resize((brand_width, brand_height), Image.Resampling.LANCZOS)
+                    
+
+                    print(f"🔍 Processed brand image mode: {brand_img.mode}")
+                    print(f"🔍 Processed brand image size: {brand_img.size}")
+
+                    
+                    # Paste brand image
+                    if template_image.mode != 'RGBA':
+                        template_image = template_image.convert('RGBA')
+                        print("🔍 Converted template image to RGBA")
+                    template_image.paste(brand_img, (current_x, current_y), brand_img)
+                    
+                    logger.info(f"Rendered brand {brand.name} at ({current_x}, {current_y})")
+                    print(f"🔍 Successfully pasted brand {brand.name} at ({current_x}, {current_y})")
+                    
+                    # Move to next position
+                    current_x += brand_width + horizontal_spacing
+                    brands_in_current_row += 1
+                    
+                except Exception as e:
+                    print(f"🔍 Failed to render brand {brand.name}: {e}")
+                    logger.error(f"Failed to render brand {brand.name}: {e}")
 
 
 class ImageContentListView(APIView):
@@ -1847,26 +1977,30 @@ class DeleteContentView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class BrandListAPIView(generics.ListAPIView):
-    queryset = Brand.objects.all().order_by('-uploaded_at')
+    queryset = Brand.objects.all().order_by('category', 'name')
     serializer_class = BrandSerializer
-
-class TemplateBrandPositionCreateView(APIView):
-    def post(self, request):
-        serializer = TemplateBrandPositionSerializer(data=request.data)
-        if serializer.is_valid():
-            # Enforce uniqueness manually if needed
-            obj, created = TemplateBrandPosition.objects.update_or_create(
-                template=serializer.validated_data['template'],
-                brand=serializer.validated_data['brand'],
-                defaults={
-                    'x': serializer.validated_data['x'],
-                    'y': serializer.validated_data['y'],
-                    'width': serializer.validated_data['width'],
-                    'height': serializer.validated_data['height'],
+    
+    def get(self, request, *args, **kwargs):
+        brands = self.get_queryset()
+        
+        # Group brands by category
+        categories = {}
+        for brand in brands:
+            category = brand.category
+            if category not in categories:
+                categories[category] = {
+                    'category_key': category,
+                    'category_name': brand.get_category_display(),
+                    'brands': []
                 }
-            )
-            return Response({
-                "status": "updated" if not created else "created",
-                "id": obj.id
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            categories[category]['brands'].append({
+                'id': brand.id,
+                'name': brand.name,
+                'brand_image': request.build_absolute_uri(brand.brand_image.url) if brand.brand_image else None
+            })
+        
+        return Response({
+            'categories': list(categories.values()),
+            'total_brands': brands.count()
+        })
+
