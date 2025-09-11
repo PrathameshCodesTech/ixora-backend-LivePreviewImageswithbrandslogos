@@ -14,7 +14,8 @@ from PIL import Image, ImageDraw, ImageFont
 from django.conf import settings
 from django.core.files import File
 from django.db import IntegrityError
-from django.db.models import Q, Count
+from django.db.models import Count, Q
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -473,6 +474,19 @@ class DoctorVideoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DoctorVideo.objects.all().order_by('-created_at')
     serializer_class = DoctorVideoSerializer
     pagination_class = Pagination_class
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.GET.get('search', '')
+        specialization = self.request.GET.get('specialization', '')
+        
+        # Apply search filters
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        if specialization:
+            queryset = queryset.filter(specialization__icontains=specialization)
+            
+        return queryset
 
 # ------------------------------------------------------------------------------
 # Bulk uploads
@@ -538,19 +552,34 @@ def bulk_upload_employees(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
 class DoctorListByEmployee(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         employee_id = request.GET.get('employee_id')
+        search = request.GET.get('search', '')
+        specialization = request.GET.get('specialization', '')
+        
         if not employee_id:
             return Response({"detail": "employee_id is required."}, status=400)
         try:
             employee = Employee.objects.get(employee_id=employee_id)
         except Employee.DoesNotExist:
             return Response({"detail": "Employee not found for this employee_id."}, status=404)
+            
         doctors = Doctor.objects.filter(employee=employee)
-        serializer = DoctorSerializer(doctors, many=True)
-        return Response(serializer.data)
+        
+        # Apply search filters
+        if search:
+            doctors = doctors.filter(name__icontains=search)
+        if specialization:
+            doctors = doctors.filter(specialization__icontains=specialization)
+            
+        paginator = Pagination_class()
+        page = paginator.paginate_queryset(doctors, request)
+        serializer = DoctorSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 class DoctorVideoListView(APIView):
     def get(self, request):
@@ -1187,12 +1216,21 @@ def update_employees_from_excel(request):
 
 class TemplateWiseVideoCountView(APIView):
     def get(self, request):
-        template_counts = DoctorOutputVideo.objects.values("template__id", "template__name").annotate(video_count=Count("id")).order_by("-video_count")
+        template_type = request.GET.get('template_type', 'video')  # Add this parameter
+        
+        if template_type == 'image':
+            # Count ImageContent instead of DoctorOutputVideo
+            template_counts = ImageContent.objects.values("template__id", "template__name").annotate(content_count=Count("id")).order_by("-content_count")
+        else:
+            # Original video logic
+            template_counts = DoctorOutputVideo.objects.values("template__id", "template__name").annotate(video_count=Count("id")).order_by("-video_count")
+        
         data = [{
             "template_id": item["template__id"],
             "template_name": item["template__name"],
-            "video_count": item["video_count"]
+            "video_count": item.get("video_count") or item.get("content_count", 0)
         } for item in template_counts if item["template__id"] is not None]
+        
         return Response(data, status=status.HTTP_200_OK)
 
 # ------------------------------------------------------------------------------
@@ -2076,3 +2114,32 @@ class BrandListAPIView(generics.ListAPIView):
             'total_brands': brands.count()
         })
 
+class ImageTemplateUsageView(APIView):
+    def get(self, request):
+        # Get template usage counts
+        template_counts = ImageContent.objects.values(
+            "template__id", 
+            "template__name"
+        ).annotate(
+            usage_count=Count("id")
+        ).order_by("-usage_count")
+        
+        # Get doctor names for each template separately
+        data = []
+        for item in template_counts:
+            if item["template__id"] is not None:
+                # Get doctor names for this specific template - use 'doctor' not 'doctor_info'
+                doctor_names = ImageContent.objects.filter(
+                    template__id=item["template__id"]
+                ).values_list(
+                    "doctor__name", flat=True  # Changed from doctor_info__name to doctor__name
+                ).distinct()
+                
+                data.append({
+                    "template_id": item["template__id"],
+                    "template_name": item["template__name"],
+                    "usage_count": item["usage_count"],
+                    "doctor_names": [name for name in doctor_names if name]
+                })
+        
+        return Response(data, status=status.HTTP_200_OK)
