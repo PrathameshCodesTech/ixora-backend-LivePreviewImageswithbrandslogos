@@ -6,6 +6,13 @@ import string
 import logging
 import subprocess
 from datetime import datetime, date, timedelta
+import mimetypes
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
+from django.core.files.storage import default_storage
+from django.core.exceptions import ValidationError
 
 import openpyxl
 import pandas as pd  # type: ignore
@@ -24,8 +31,56 @@ from rest_framework import status, viewsets, generics
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django_ratelimit.decorators import ratelimit
+
+from django_ratelimit.decorators import ratelimit
+import psutil
+import threading
+import time  # ADD THIS MISSING IMPORT
+from django.db import models
+from django.core.cache import cache
+
+# Resource monitoring decorator
+def monitor_resources(func):
+    def wrapper(*args, **kwargs):
+        start_memory = psutil.virtual_memory().percent
+        start_time = time.time()
+        
+        try:
+            result = func(*args, **kwargs)
+            return result
+        finally:
+            end_memory = psutil.virtual_memory().percent
+            duration = time.time() - start_time
+            
+            # Log if resource usage is high
+            if end_memory - start_memory > 10 or duration > 30:
+                logger.warning(f"High resource usage in {func.__name__}: "
+                             f"Memory: {start_memory}% -> {end_memory}%, "
+                             f"Duration: {duration:.2f}s")
+    return wrapper
+
+
+
+from django.core.cache import cache
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+
+class BurstRateThrottle(UserRateThrottle):
+    scope = 'burst'
+    rate = '60/min'
+
+class SustainedRateThrottle(UserRateThrottle):
+    scope = 'sustained'
+    rate = '1000/day'
+
+class MediaGenerationThrottle(UserRateThrottle):
+    scope = 'media_generation'
+    rate = '10/hour'
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -54,6 +109,82 @@ from .serializers import (
     
 )
 
+import psutil
+import os
+from django.core.cache import cache
+from celery import current_app
+
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """System health check for monitoring"""
+        health_data = {
+            "status": "healthy",
+            "timestamp": timezone.now().isoformat(),
+            "checks": {}
+        }
+        
+        overall_status = True
+        
+        # Database check
+        try:
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                health_data["checks"]["database"] = {"status": "ok"}
+        except Exception as e:
+            health_data["checks"]["database"] = {"status": "error", "message": str(e)}
+            overall_status = False
+        
+        # Cache check
+        try:
+            cache.set("health_check", "ok", 10)
+            if cache.get("health_check") == "ok":
+                health_data["checks"]["cache"] = {"status": "ok"}
+            else:
+                health_data["checks"]["cache"] = {"status": "error", "message": "Cache not responding"}
+                overall_status = False
+        except Exception as e:
+            health_data["checks"]["cache"] = {"status": "error", "message": str(e)}
+            overall_status = False
+        
+        # Celery check
+        try:
+            inspector = current_app.control.inspect()
+            active_workers = inspector.active()
+            if active_workers:
+                health_data["checks"]["celery"] = {"status": "ok", "workers": len(active_workers)}
+            else:
+                health_data["checks"]["celery"] = {"status": "warning", "message": "no active workers"}
+        except Exception as e:
+            health_data["checks"]["celery"] = {"status": "error", "message": str(e)}
+        
+        # Disk space check
+        try:
+            disk_usage = psutil.disk_usage(settings.MEDIA_ROOT)
+            free_percent = (disk_usage.free / disk_usage.total) * 100
+            if free_percent < 10:
+                health_data["checks"]["disk"] = {"status": "warning", "free_percent": round(free_percent, 2)}
+            else:
+                health_data["checks"]["disk"] = {"status": "ok", "free_percent": round(free_percent, 2)}
+        except Exception as e:
+            health_data["checks"]["disk"] = {"status": "error", "message": str(e)}
+        
+        # Memory check
+        try:
+            memory = psutil.virtual_memory()
+            if memory.percent > 90:
+                health_data["checks"]["memory"] = {"status": "warning", "usage_percent": memory.percent}
+                overall_status = False
+            else:
+                health_data["checks"]["memory"] = {"status": "ok", "usage_percent": memory.percent}
+        except Exception as e:
+            health_data["checks"]["memory"] = {"status": "error", "message": str(e)}
+        
+        health_data["status"] = "healthy" if overall_status else "unhealthy"
+        status_code = status.HTTP_200_OK if overall_status else status.HTTP_503_SERVICE_UNAVAILABLE
+        
 # Celery task
 try:
     from employee_app.tasks import generate_custom_video_task
@@ -67,6 +198,178 @@ except Exception:
 # Logging
 # ------------------------------------------------------------------------------
 logger = logging.getLogger(__name__)
+
+# Security Configuration
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg']
+ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/avi', 'video/mov']
+
+
+import psutil
+import os
+from django.core.cache import cache
+from celery import current_app
+
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """System health check for monitoring"""
+        health_data = {
+            "status": "healthy",
+            "timestamp": timezone.now().isoformat(),
+            "checks": {}
+        }
+        
+        overall_status = True
+        
+        # Database check
+        try:
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                health_data["checks"]["database"] = {"status": "ok"}
+        except Exception as e:
+            health_data["checks"]["database"] = {"status": "error", "message": str(e)}
+            overall_status = False
+        
+        # Cache check
+        try:
+            cache.set("health_check", "ok", 10)
+            if cache.get("health_check") == "ok":
+                health_data["checks"]["cache"] = {"status": "ok"}
+            else:
+                health_data["checks"]["cache"] = {"status": "error", "message": "Cache not responding"}
+                overall_status = False
+        except Exception as e:
+            health_data["checks"]["cache"] = {"status": "error", "message": str(e)}
+            overall_status = False
+        
+        # Celery check
+        try:
+            inspector = current_app.control.inspect()
+            active_workers = inspector.active()
+            if active_workers:
+                health_data["checks"]["celery"] = {"status": "ok", "workers": len(active_workers)}
+            else:
+                health_data["checks"]["celery"] = {"status": "warning", "message": "no active workers"}
+        except Exception as e:
+            health_data["checks"]["celery"] = {"status": "error", "message": str(e)}
+        
+        # Disk space check
+        try:
+            disk_usage = psutil.disk_usage(settings.MEDIA_ROOT)
+            free_percent = (disk_usage.free / disk_usage.total) * 100
+            if free_percent < 10:
+                health_data["checks"]["disk"] = {"status": "warning", "free_percent": round(free_percent, 2)}
+            else:
+                health_data["checks"]["disk"] = {"status": "ok", "free_percent": round(free_percent, 2)}
+        except Exception as e:
+            health_data["checks"]["disk"] = {"status": "error", "message": str(e)}
+        
+        # Memory check
+        try:
+            memory = psutil.virtual_memory()
+            if memory.percent > 90:
+                health_data["checks"]["memory"] = {"status": "warning", "usage_percent": memory.percent}
+                overall_status = False
+            else:
+                health_data["checks"]["memory"] = {"status": "ok", "usage_percent": memory.percent}
+        except Exception as e:
+            health_data["checks"]["memory"] = {"status": "error", "message": str(e)}
+        
+        health_data["status"] = "healthy" if overall_status else "unhealthy"
+        status_code = status.HTTP_200_OK if overall_status else status.HTTP_503_SERVICE_UNAVAILABLE
+        
+        return Response(health_data, status=status_code)
+@api_view(['GET'])
+def system_metrics(request):
+    """Detailed system metrics for monitoring"""
+    try:
+        import psutil
+        
+        # Memory metrics
+        memory = psutil.virtual_memory()
+        
+        # Disk metrics
+        disk = psutil.disk_usage(settings.MEDIA_ROOT)
+        
+        # CPU metrics
+        cpu_percent = psutil.cpu_percent(interval=1)
+        
+        # Active connections
+        connections = len(psutil.net_connections())
+        
+        # Celery metrics
+        try:
+            from celery import current_app
+            inspector = current_app.control.inspect()
+            active_tasks = inspector.active()
+            active_count = sum(len(tasks) for tasks in (active_tasks or {}).values())
+        except:
+            active_count = 0
+        
+        metrics = {
+            "timestamp": timezone.now().isoformat(),
+            "memory": {
+                "percent": memory.percent,
+                "available_gb": round(memory.available / (1024**3), 2),
+                "used_gb": round(memory.used / (1024**3), 2)
+            },
+            "disk": {
+                "percent": round((disk.used / disk.total) * 100, 2),
+                "free_gb": round(disk.free / (1024**3), 2)
+            },
+            "cpu_percent": cpu_percent,
+            "active_connections": connections,
+            "active_celery_tasks": active_count
+        }
+        
+        return Response(metrics)
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+# Add process monitoring
+def get_system_stats():
+    """Get basic system statistics for monitoring"""
+    try:
+        import psutil
+        return {
+            'cpu_percent': psutil.cpu_percent(interval=1),
+            'memory_percent': psutil.virtual_memory().percent,
+            'disk_usage': psutil.disk_usage('/').percent if psutil.disk_usage('/') else 0,
+            'active_connections': len(psutil.net_connections()),
+        }
+    except Exception:
+        return {}
+
+
+def validate_file_upload(file):
+    """Validate uploaded files for security"""
+    if not file:
+        raise ValidationError("No file provided")
+    
+    if file.size > MAX_FILE_SIZE:
+        raise ValidationError(f"File too large. Maximum size is {MAX_FILE_SIZE/1024/1024}MB")
+    
+    # Additional size check for images
+    if file.content_type and file.content_type.startswith('image/'):
+        if file.size > 5 * 1024 * 1024:  # 5MB for images
+            raise ValidationError("Image files must be under 5MB")
+    
+    # Check MIME type
+    mime_type, _ = mimetypes.guess_type(file.name)
+    if mime_type not in ALLOWED_IMAGE_TYPES + ALLOWED_VIDEO_TYPES:
+        raise ValidationError("Invalid file type")
+    
+    # Check file extension
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.mp4', '.avi', '.mov']
+    if not any(file.name.lower().endswith(ext) for ext in allowed_extensions):
+        raise ValidationError("Invalid file extension")
+    
+    return True
 
 # ------------------------------------------------------------------------------
 # Helpers
@@ -134,7 +437,19 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
 
 def get_tokens_for_employee(employee):
-    refresh = RefreshToken.for_user(employee)
+    from django.contrib.auth.models import User
+    
+    # Create or get a Django User for this employee
+    user, created = User.objects.get_or_create(
+        username=employee.employee_id,
+        defaults={
+            'email': employee.email or '',
+            'first_name': employee.first_name,
+            'last_name': employee.last_name or ''
+        }
+    )
+    
+    refresh = RefreshToken.for_user(user)
     refresh.access_token.set_exp(lifetime=timedelta(hours=1))
     return {
         'refresh': str(refresh),
@@ -142,6 +457,7 @@ def get_tokens_for_employee(employee):
         'access_token_exp': refresh.access_token.payload['exp'],
     }
 
+@permission_classes([AllowAny])
 @api_view(['POST'])
 def employee_login_api(request):
     serializer = EmployeeLoginSerializer(data=request.data)
@@ -182,6 +498,8 @@ def employee_login_api(request):
                     'name': f"{employee.first_name} {employee.last_name}",
                     'email': employee.email,
                     'department': employee.department,
+                    'first_name': employee.first_name,
+                    'last_name': employee.last_name or '',
                     'user_type': employee.user_type
                 }
             }, status=status.HTTP_200_OK)
@@ -197,7 +515,15 @@ def employee_login_api(request):
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
+# @ratelimit(key='ip', rate='20/m', method='POST', block=True)
 def add_doctor(request):
+    # Validate uploaded files
+    if 'image' in request.FILES:
+        try:
+            validate_file_upload(request.FILES['image'])
+        except ValidationError as e:
+            return Response({'status': 'error', 'errors': {'image': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+    
     serializer = DoctorSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -461,39 +787,86 @@ class VideoGenViewSet(viewsets.ModelViewSet):
 
 
         try:
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd, 
+                check=True, 
+                capture_output=True, 
+                text=True,
+                timeout=1800  # 30 minute timeout
+            )
+        except subprocess.TimeoutExpired:
+            logger.error("FFmpeg process timed out after 30 minutes")
+            raise Exception("Video generation timed out")
         except subprocess.CalledProcessError as e:
             logger.error(f"Final FFmpeg failed: {e.stderr}")
             raise Exception(f"Video generation failed: {e.stderr}")
         finally:
             for temp_video, _, _ in temp_videos:
                 if os.path.exists(temp_video):
-                    os.remove(temp_video)
+                    try:
+                        os.remove(temp_video)
+                    except OSError:
+                        pass
 
 class DoctorVideoViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = DoctorVideo.objects.all().order_by('-created_at')
     serializer_class = DoctorVideoSerializer
     pagination_class = Pagination_class
     
     def get_queryset(self):
-        queryset = super().get_queryset()
-        search = self.request.GET.get('search', '')
-        specialization = self.request.GET.get('specialization', '')
+        # Get user info from query parameters
+        employee_id = self.request.query_params.get('employee_id')
+        user_type = self.request.query_params.get('user_type')
+        search = self.request.query_params.get('search', '')
+        specialization = self.request.query_params.get('specialization', '')
+        
+        base_queryset = DoctorVideo.objects.select_related(
+            'employee', 
+            'employee__rbm'
+        ).prefetch_related(
+            'doctor_videos__template',
+            'image_contents__template'
+        ).annotate(
+            latest_content_date=models.Max(
+                models.Case(
+                    models.When(doctor_videos__isnull=False, then='doctor_videos__created_at'),
+                    models.When(image_contents__isnull=False, then='image_contents__created_at'),
+                    default='created_at'
+                )
+            )
+        )
+        
+        # Apply role-based filtering
+        if user_type == "Admin" or user_type == "SuperAdmin":
+            # Admins see all doctors
+            queryset = base_queryset.order_by('-latest_content_date', '-created_at')
+        else:
+            # Regular employees see only their own doctors
+            if not employee_id:
+                return base_queryset.none()
+            
+            try:
+                employee = Employee.objects.get(employee_id=employee_id)
+                queryset = base_queryset.filter(employee=employee).order_by('-latest_content_date', '-created_at')
+            except Employee.DoesNotExist:
+                return base_queryset.none()
         
         # Apply search filters
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            queryset = queryset.filter(
+                Q(name__icontains=search) | 
+                Q(clinic__icontains=search) |
+                Q(mobile_number__icontains=search)
+            )
         if specialization:
-            queryset = queryset.filter(specialization__icontains=specialization)
+            queryset = queryset.filter(specialization__iexact=specialization)
             
         return queryset
+    
 
-# ------------------------------------------------------------------------------
-# Bulk uploads
-# ------------------------------------------------------------------------------
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser])
+# @ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def bulk_upload_employees(request):
     excel_file = request.FILES.get('file')
     if not excel_file:
@@ -555,30 +928,55 @@ def bulk_upload_employees(request):
 
 
 class DoctorListByEmployee(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Keep flexible but add validation
+    
     def get(self, request):
+        print(f"DEBUG: Request received for employee_id: {request.GET.get('employee_id')}")
+        print(f"DEBUG: Request headers: {request.headers}")
+        
         employee_id = request.GET.get('employee_id')
+        user_type = request.GET.get('user_type')
         search = request.GET.get('search', '')
         specialization = request.GET.get('specialization', '')
         
         if not employee_id:
             return Response({"detail": "employee_id is required."}, status=400)
+            
         try:
             employee = Employee.objects.get(employee_id=employee_id)
         except Employee.DoesNotExist:
             return Response({"detail": "Employee not found for this employee_id."}, status=404)
             
-        doctors = Doctor.objects.filter(employee=employee)
+        # Role-based queryset filtering
+        base_queryset = DoctorVideo.objects.select_related('employee').annotate(
+            latest_content_date=models.Max(
+                models.Case(
+                    models.When(doctor_videos__isnull=False, then='doctor_videos__created_at'),
+                    models.When(image_contents__isnull=False, then='image_contents__created_at'),
+                    default='created_at'
+                )
+            )
+        )
+        
+        if user_type == "Admin" or user_type == "SuperAdmin":
+            # Admin sees all doctors
+            doctors = base_queryset.order_by('-latest_content_date', '-created_at')
+        else:
+            # Regular employee sees only their own doctors
+            doctors = base_queryset.filter(employee=employee).order_by('-latest_content_date', '-created_at')
         
         # Apply search filters
         if search:
-            doctors = doctors.filter(name__icontains=search)
+            doctors = doctors.filter(
+                Q(name__icontains=search) | 
+                Q(clinic__icontains=search)
+            )
         if specialization:
-            doctors = doctors.filter(specialization__icontains=specialization)
+            doctors = doctors.filter(specialization__iexact=specialization)
             
         paginator = Pagination_class()
         page = paginator.paginate_queryset(doctors, request)
-        serializer = DoctorSerializer(page, many=True)
+        serializer = DoctorVideoSerializer(page, many=True)  # Use DoctorVideoSerializer, not DoctorSerializer
         return paginator.get_paginated_response(serializer.data)
 
 class DoctorVideoListView(APIView):
@@ -675,6 +1073,7 @@ def generate_video_for_doctor(doctor):
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
+# @ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def bulk_upload_doctors(request):
     excel_file = request.FILES.get('file')
     if not excel_file:
@@ -889,7 +1288,7 @@ def doctors_count(request):
 # ------------------------------------------------------------------------------
 
 class VideoTemplateAPIView(APIView):
-
+    permission_classes = [AllowAny]  # Add this line
     def get(self, request, pk=None):
         if pk:
             template = get_object_or_404(VideoTemplates, pk=pk)
@@ -897,8 +1296,24 @@ class VideoTemplateAPIView(APIView):
         else:
             status_param = request.query_params.get('status')
             template_type = request.query_params.get('template_type', 'video')  # <- NEW
+            user_type = request.query_params.get('user_type')
+            employee_id = request.query_params.get('employee_id')
 
             templates = VideoTemplates.objects.filter(template_type=template_type)  # <- NEW
+
+            # Apply user-based filtering
+            if user_type and user_type not in ["Admin", "SuperAdmin"]:
+                # Non-admin users see only public templates or their own
+                if employee_id:
+                    try:
+                        employee = Employee.objects.get(employee_id=employee_id)
+                        templates = templates.filter(
+                            Q(is_public=True) | Q(created_by=employee)
+                        )
+                    except Employee.DoesNotExist:
+                        templates = templates.filter(is_public=True)
+                else:
+                    templates = templates.filter(is_public=True)
 
             if status_param is not None:
                 try:
@@ -914,11 +1329,20 @@ class VideoTemplateAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = VideoTemplatesSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer = VideoTemplatesSerializer(data=request.data)
+            if serializer.is_valid():
+                # Set the creator
+                employee_id = request.data.get('employee_id') or getattr(request.user, 'username', None)
+                if employee_id:
+                    try:
+                        employee = Employee.objects.get(employee_id=employee_id)
+                        serializer.save(created_by=employee)
+                    except Employee.DoesNotExist:
+                        serializer.save()
+                else:
+                    serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
         template = get_object_or_404(VideoTemplates, pk=pk)
@@ -1163,14 +1587,26 @@ class GenerateDoctorOutputVideoView(APIView):
 
 
         try:
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd, 
+                check=True, 
+                capture_output=True, 
+                text=True,
+                timeout=1800  # 30 minute timeout
+            )
+        except subprocess.TimeoutExpired:
+            logger.error("FFmpeg process timed out after 30 minutes")
+            raise Exception("Video generation timed out")
         except subprocess.CalledProcessError as e:
             logger.error(f"Final FFmpeg failed: {e.stderr}")
             raise Exception(f"Video generation failed: {e.stderr}")
         finally:
             for temp_video, _, _ in temp_videos:
                 if os.path.exists(temp_video):
-                    os.remove(temp_video)
+                    try:
+                        os.remove(temp_video)
+                    except OSError:
+                        pass
 
     def get(self, request):
         doctor_id = request.query_params.get("doctor_id")
@@ -1239,11 +1675,12 @@ class TemplateWiseVideoCountView(APIView):
 
 class ImageTemplateAPIView(APIView):
     """Handle image templates separately from video templates"""
-
+    permission_classes = [AllowAny] 
     def get(self, request, pk=None):
         if pk:
             template = get_object_or_404(VideoTemplates, pk=pk, template_type='image')
             serializer = ImageTemplateSerializer(template, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             status_param = request.query_params.get('status')
             templates = VideoTemplates.objects.filter(template_type='image')
@@ -1255,7 +1692,7 @@ class ImageTemplateAPIView(APIView):
                     return Response({"error": "Invalid status value. Use true or false."}, status=status.HTTP_400_BAD_REQUEST)
             templates = templates.order_by('-created_at')
             serializer = ImageTemplateSerializer(templates, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = ImageTemplateSerializer(data=request.data, context={'request': request})
@@ -1277,16 +1714,71 @@ class ImageTemplateAPIView(APIView):
         template.delete()
         return Response({"detail": "Template deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+# @method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class GenerateImageContentView(APIView):
     """Generate image with text overlay - DoctorVideo only"""
+    # throttle_classes = [MediaGenerationThrottle, BurstRateThrottle]
 
+    @monitor_resources
     def post(self, request):
+        # Check system resources before processing
+        memory_percent = psutil.virtual_memory().percent
+        if memory_percent > 95:
+            return Response({
+                "error": "System under high load, please try again later"
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        try:
+            return self._process_request(request)
+        except ValidationError as e:
+            logger.error(f"Validation error in image generation: {e}")
+            return Response({
+                "error": "Invalid input data", 
+                "details": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except VideoTemplates.DoesNotExist:
+            logger.error(f"Template not found: {request.data.get('template_id')}")
+            return Response({
+                "error": "Template not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        except DoctorVideo.DoesNotExist:
+            logger.error(f"Doctor not found: {request.data.get('doctor_id')}")
+            return Response({
+                "error": "Doctor not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Unexpected error in image generation: {e}", exc_info=True)
+            return Response({
+                "error": "Image generation failed",
+                "message": "Please try again later"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _process_request(self, request):
+        # Add security check - get from request data, not localStorage
+        employee_id = request.data.get("employee_id")
+        user_type = request.data.get("user_type", "Employee")
+
+        # Validate uploaded files first
+        if 'doctor_image' in request.FILES:
+            try:
+                validate_file_upload(request.FILES['doctor_image'])
+            except ValidationError as e:
+                return Response({"error": f"File validation failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
         template_id = request.data.get("template_id")
         doctor_id = request.data.get("doctor_id")
         mobile = request.data.get("mobile")
         name = request.data.get("name")
         content_data = request.data.get("content_data", {})
         selected_brand_ids = request.data.get("selected_brands", [])
+        
+        # Security: Ensure employee can only create content for themselves (unless admin)
+        if doctor_id and user_type not in ["Admin", "SuperAdmin"]:
+            try:
+                doctor = DoctorVideo.objects.get(id=doctor_id)
+                if doctor.employee.employee_id != employee_id:
+                    return Response({"error": "You can only generate content for your own doctors"}, status=status.HTTP_403_FORBIDDEN)
+            except DoctorVideo.DoesNotExist:
+                pass  # Will be handled later
 
         if not isinstance(selected_brand_ids, list) or not all(isinstance(bid, int) for bid in selected_brand_ids):
             return Response({"error": "selected_brands must be a list of brand IDs."}, status=status.HTTP_400_BAD_REQUEST)
@@ -1295,7 +1787,7 @@ class GenerateImageContentView(APIView):
             return Response({"error": "You can select up to 10 brands only."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            template = VideoTemplates.objects.get(id=template_id, template_type='image')
+            template = VideoTemplates.objects.select_related().get(id=template_id, template_type='image')
         except VideoTemplates.DoesNotExist:
             return Response({"error": "Image template not found."}, status=status.HTTP_404_NOT_FOUND)
         
@@ -1307,25 +1799,23 @@ class GenerateImageContentView(APIView):
         is_new_doctor = False
         if doctor_id:
             try:
-                doctor_video = DoctorVideo.objects.get(id=doctor_id)
+                doctor_video = DoctorVideo.objects.select_related('employee').get(id=doctor_id)
             except DoctorVideo.DoesNotExist:
                 return Response({"error": "Doctor not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
             # Scenario 2: Find/create by mobile
-            doctor_video = DoctorVideo.objects.filter(mobile_number=mobile).first()
+            doctor_video = DoctorVideo.objects.select_related('employee').filter(mobile_number=mobile).first()
             if not doctor_video:
+                # Need an employee
                 # Need an employee
                 try:
                     employee_id = request.data.get("employee_id")
                     if employee_id:
                         employee = Employee.objects.get(employee_id=employee_id)
                     else:
-                        employee = Employee.objects.first()
-                        if not employee:
-                            return Response({"error": "No employees found in system."}, status=status.HTTP_404_NOT_FOUND)
+                        return Response({"error": "employee_id is required."}, status=status.HTTP_400_BAD_REQUEST)
                 except Employee.DoesNotExist:
                     return Response({"error": f"Employee {employee_id} not found."}, status=status.HTTP_404_NOT_FOUND)
-
                 clinic = content_data.get("doctor_clinic") or request.data.get("clinic", "Unknown Clinic")
                 city = content_data.get("doctor_city") or request.data.get("city", "Unknown City")
                 specialization = content_data.get("doctor_specialization") or request.data.get("specialization", "General Medicine")
@@ -1358,19 +1848,41 @@ class GenerateImageContentView(APIView):
             return Response({"error": "Template image file not found."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            print(f"🔍 About to call generate_image_with_text with brand IDs: {selected_brand_ids}")
-            output_path = self.generate_image_with_text(template, content_data, doctor_video, selected_brand_ids)
-            image_content = ImageContent.objects.create(
-                template=template,
-                doctor=doctor_video,
-                content_data=content_data
-            )
-            with open(output_path, 'rb') as f:
-                image_content.output_image.save(f"generated_{image_content.id}.png", File(f), save=True)
-            os.remove(output_path)
+            # Use background processing for images
+            
+            # print(f"About to call generate_image_with_text with brand IDs: {selected_brand_ids}")
+            # output_path = self.generate_image_with_text(template, content_data, doctor_video, selected_brand_ids)
+            # image_content = ImageContent.objects.create(
+            #     template=template,
+            #     doctor=doctor_video,
+            #     content_data=content_data
+            # )
+            # with open(output_path, 'rb') as f:
+            #     image_content.output_image.save(f"generated_{image_content.id}.png", File(f), save=True)
+            # os.remove(output_path)
 
-            serializer = ImageContentSerializer(image_content, context={'request': request})
-            resp = serializer.data
+            # serializer = ImageContentSerializer(image_content, context={'request': request})
+            # resp = serializer.data
+
+            # Use background processing for images
+            from .tasks import generate_image_async
+            
+            task = generate_image_async.delay(
+                template_id=template_id,
+                doctor_id=doctor_video.id,
+                content_data=content_data,
+                selected_brand_ids=selected_brand_ids
+            )
+            
+            # Return task ID to frontend
+            resp = {
+                "status": "processing",
+                "task_id": str(task.id),
+                "message": "Image generation started"
+            }
+
+
+
             resp['doctor_info'] = {
                 'id': doctor_video.id,
                 'name': doctor_video.name,
@@ -1380,11 +1892,9 @@ class GenerateImageContentView(APIView):
                 'is_new_doctor': is_new_doctor
             }
             if selected_brand_ids:
-                selected_brands = Brand.objects.filter(id__in=selected_brand_ids)
-                resp['selected_brands'] = [
-                    {'id': b.id, 'name': b.name, 'category': b.category}
-                    for b in selected_brands
-                ]
+                # Use single query instead of individual lookups
+                selected_brands = list(Brand.objects.filter(id__in=selected_brand_ids).values('id', 'name', 'category'))
+                resp['selected_brands'] = selected_brands
             else:
                 resp['selected_brands'] = []
 
@@ -1397,11 +1907,10 @@ class GenerateImageContentView(APIView):
                 logger.error(f"Template image path: {template.template_image.path}")
             return Response({"error": "Image generation failed.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    #
+
     def generate_image_with_text(self, template, content_data, doctor, selected_brand_ids=None):
-        print(f"🔍 ENTERED generate_image_with_text with brand IDs parameter: {selected_brand_ids}")
         logger.info(f"Starting image generation for template {template.id}")
-        logger.info(f"Template image field: {template.template_image}")
-        logger.info(f"Template image path: {template.template_image.path if template.template_image else 'None'}")
         
         if not template.template_image or not template.template_image.path:
             raise Exception("Template image path is None or empty")
@@ -1409,316 +1918,370 @@ class GenerateImageContentView(APIView):
         if not os.path.exists(template.template_image.path):
             raise Exception(f"Template image file does not exist: {template.template_image.path}")
         
-        logger.info("Opening template image...")
-        template_image = Image.open(template.template_image.path)
-        logger.info("Creating ImageDraw...")
-        draw = ImageDraw.Draw(template_image)
+        # Memory-efficient image processing with explicit cleanup
+        template_image = None
+        draw = None
+        brand_images = []  # Track all opened images for cleanup
         
-        logger.info("Getting text positions...")
-        positions = template.text_positions or {}
-        logger.info(f"Text positions: {positions}")
-
-        positions = template.text_positions or {}
-        # Font mapping for PIL
-        FONT_MAP = {
-            'Arial': 'arial.ttf',
-            'Times New Roman': 'times.ttf',
-            'Helvetica': 'arial.ttf',
-            'Georgia': 'georgia.ttf',
-            'Verdana': 'verdana.ttf',
-            'Impact': 'impact.ttf',
-            'Comic Sans MS': 'comic.ttf',
-            'Dancing Script': 'DancingScript-Regular.ttf',
-            'Great Vibes': 'GreatVibes-Regular.ttf',
-            'Pacifico': 'Pacifico-Regular.ttf',
-            'Allura': 'Allura-Regular.ttf',
-            'Alex Brush': 'AlexBrush-Regular.ttf'
-        }
-
-        def get_font(font_family, font_size, font_weight='normal', font_style='normal'):
-            base_font = FONT_MAP.get(font_family, 'arial.ttf')
+        # Make brand_images accessible to render_brands_in_area method
+        self._current_brand_images = brand_images        
+        try:
+            template_image = Image.open(template.template_image.path)
             
-            # For cursive fonts, use full path
-            if font_family in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
-                font_path = os.path.join(settings.BASE_DIR, "fonts", base_font)
-            else:
-                font_path = base_font
+            # Limit image size to prevent memory issues - MOVE THIS UP
+            max_size = (2048, 2048)
+            if template_image.size[0] > max_size[0] or template_image.size[1] > max_size[1]:
+                template_image.thumbnail(max_size, Image.Resampling.LANCZOS)
+                
+            # Convert to RGB if needed to reduce memory
+            if template_image.mode not in ('RGB', 'RGBA'):
+                template_image = template_image.convert('RGB')
             
-            # Handle font weight (bold) - only for non-cursive fonts
-            if font_weight == 'bold' and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
-                bold_font = font_path.replace('.ttf', 'bd.ttf')
-                try:
-                    font = ImageFont.truetype(bold_font, font_size)
-                except:
+            # Limit image size to prevent memory issues
+            max_size = (2048, 2048)
+            if template_image.size[0] > max_size[0] or template_image.size[1] > max_size[1]:
+                template_image.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            draw = ImageDraw.Draw(template_image)
+            
+            logger.info("Getting text positions...")
+            positions = template.text_positions or {}
+            logger.info(f"Text positions: {positions}")
+
+            positions = template.text_positions or {}
+            # Font mapping for PIL
+            FONT_MAP = {
+                'Arial': 'arial.ttf',
+                'Times New Roman': 'times.ttf',
+                'Helvetica': 'arial.ttf',
+                'Georgia': 'georgia.ttf',
+                'Verdana': 'verdana.ttf',
+                'Impact': 'impact.ttf',
+                'Comic Sans MS': 'comic.ttf',
+                'Dancing Script': 'DancingScript-Regular.ttf',
+                'Great Vibes': 'GreatVibes-Regular.ttf',
+                'Pacifico': 'Pacifico-Regular.ttf',
+                'Allura': 'Allura-Regular.ttf',
+                'Alex Brush': 'AlexBrush-Regular.ttf'
+            }
+
+            def get_font(font_family, font_size, font_weight='normal', font_style='normal'):
+                base_font = FONT_MAP.get(font_family, 'arial.ttf')
+                
+                # For cursive fonts, use full path
+                if font_family in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                    font_path = os.path.join(settings.BASE_DIR, "fonts", base_font)
+                else:
+                    font_path = base_font
+                
+                # Handle font weight (bold) - only for non-cursive fonts
+                if font_weight == 'bold' and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                    bold_font = font_path.replace('.ttf', 'bd.ttf')
+                    try:
+                        font = ImageFont.truetype(bold_font, font_size)
+                    except:
+                        try:
+                            font = ImageFont.truetype(font_path, font_size)
+                        except:
+                            font = ImageFont.load_default()
+                else:
                     try:
                         font = ImageFont.truetype(font_path, font_size)
                     except:
-                        font = ImageFont.load_default()
-            else:
-                try:
-                    font = ImageFont.truetype(font_path, font_size)
-                except:
-                    try:
-                        font = ImageFont.truetype("arial.ttf", font_size)
-                    except:
-                        font = ImageFont.load_default()
-            
-            return font
-        ##
-        # Combine city and state with comma if both exist
-        city_state = []
-        if content_data.get('doctor_city', doctor.city):
-            city_state.append(content_data.get('doctor_city', doctor.city))
-        if content_data.get('doctor_state', doctor.state):
-            city_state.append(content_data.get('doctor_state', doctor.state))
-        city_state_combined = ', '.join(city_state)
+                        try:
+                            font = ImageFont.truetype("arial.ttf", font_size)
+                        except:
+                            font = ImageFont.load_default()
+                
+                return font
+            ##
+            # Combine city and state with comma if both exist
+            city_state = []
+            if content_data.get('doctor_city', doctor.city):
+                city_state.append(content_data.get('doctor_city', doctor.city))
+            if content_data.get('doctor_state', doctor.state):
+                city_state.append(content_data.get('doctor_state', doctor.state))
+            city_state_combined = ', '.join(city_state)
 
-        all_text_data = {
-            'name': content_data.get('doctor_name', doctor.name),
-            'clinic': content_data.get('doctor_clinic', doctor.clinic),
-            'city': city_state_combined,  # Combined city, state
-            'specialization': content_data.get('doctor_specialization', doctor.specialization),
-            'mobile': doctor.mobile_number,
-            'customText': template.custom_text or '',
-        }
+            all_text_data = {
+                'name': content_data.get('doctor_name', doctor.name),
+                'clinic': content_data.get('doctor_clinic', doctor.clinic),
+                'city': city_state_combined,  # Combined city, state
+                'specialization': content_data.get('doctor_specialization', doctor.specialization),
+                'mobile': doctor.mobile_number,
+                'customText': template.custom_text or '',
+            }
 
-        # DOCTOR FIELDS RESPONSIVE CENTER ALIGNMENT (removed 'state' since it's now combined with city)
-        doctor_fields = ['name', 'specialization', 'clinic', 'city']
-        doctor_text_data = {field: all_text_data[field] for field in doctor_fields if field in all_text_data and all_text_data[field] and field in positions}
+            # DOCTOR FIELDS RESPONSIVE CENTER ALIGNMENT (removed 'state' since it's now combined with city)
+            doctor_fields = ['name', 'specialization', 'clinic', 'city']
+            doctor_text_data = {field: all_text_data[field] for field in doctor_fields if field in all_text_data and all_text_data[field] and field in positions}
 
-        if doctor_text_data:
-            print(f"🎯 Processing doctor fields for center alignment: {list(doctor_text_data.keys())}")
-            
-            # Calculate text widths for center alignment
-            field_widths = {}
-            field_fonts = {}
-            
-            for field_name, text_value in doctor_text_data.items():
+            if doctor_text_data:
+                print(f"🎯 Processing doctor fields for center alignment: {list(doctor_text_data.keys())}")
+                
+                # Calculate text widths for center alignment
+                field_widths = {}
+                field_fonts = {}
+                
+                for field_name, text_value in doctor_text_data.items():
+                    pos = positions[field_name]
+                    font_size = int(pos.get('fontSize', 40))
+                    font_weight = pos.get('fontWeight', 'normal')
+                    font_family = pos.get('fontFamily', 'Arial')
+                    font_style = pos.get('fontStyle', 'normal')
+                    
+                    styled_font = get_font(font_family, font_size, font_weight, font_style)
+                    field_fonts[field_name] = styled_font
+                    
+                    # Calculate text width using textbbox
+                    bbox = draw.textbbox((0, 0), str(text_value), font=styled_font)
+                    text_width = bbox[2] - bbox[0]
+                    field_widths[field_name] = text_width
+                    print(f"🎯 Field {field_name}: '{text_value}' = {text_width}px wide")
+                
+                # Find the widest text to base centering on
+                max_width = max(field_widths.values())
+                widest_field = max(field_widths, key=field_widths.get)
+                print(f"🎯 Widest field: {widest_field} ({max_width}px)")
+                
+                # Get base position from widest field
+                # Calculate the visual center point of the template
+                template_center_x = template_image.width // 2
+
+                # Calculate center-aligned positions for all doctor fields
+                for field_name, text_value in doctor_text_data.items():
+                    pos = positions[field_name]
+                    field_width = field_widths[field_name]
+                    styled_font = field_fonts[field_name]
+                    
+                    # Center each field based on template center, not relative to other fields
+                    centered_x = template_center_x - (field_width // 2)
+                    y_pos = int(pos['y'])  # Keep original Y position                
+                    print(f"🎯 Rendering {field_name} at centered position ({centered_x}, {y_pos})")
+                    
+                    # Apply styling
+                    color = pos.get('color', 'black')
+                    font_style = pos.get('fontStyle', 'normal')
+                    
+                    # Text shadow
+                    text_shadow = pos.get('textShadow', 'none')
+                    if text_shadow != 'none':
+                        shadow_info = parse_css_shadow(text_shadow)
+                        if shadow_info:
+                            draw.text(
+                                (centered_x + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
+                                str(text_value), fill=shadow_info['color'], font=styled_font
+                            )
+                    
+                    # Render text with center alignment
+                    # For cursive fonts, no need for italic simulation - they're naturally cursive
+                    # For non-cursive fonts with italic style, apply simulation
+                    if font_style in ['italic', 'oblique'] and pos.get('fontFamily', 'Arial') not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+                        for offset in range(3):
+                            draw.text((centered_x + offset, y_pos), str(text_value), fill=color, font=styled_font)
+                    else:
+                        draw.text((centered_x, y_pos), str(text_value), fill=color, font=styled_font)
+
+            # Handle custom text separately (not part of doctor info centering)
+            # Handle custom text separately (not part of doctor info centering) - FIXED POSITION
+            if 'customText' in all_text_data and 'customText' in positions and all_text_data['customText']:
+                field_name = 'customText'
+                text_value = all_text_data[field_name]
                 pos = positions[field_name]
                 font_size = int(pos.get('fontSize', 40))
+                color = pos.get('color', 'black')
                 font_weight = pos.get('fontWeight', 'normal')
                 font_family = pos.get('fontFamily', 'Arial')
                 font_style = pos.get('fontStyle', 'normal')
-                
-                styled_font = get_font(font_family, font_size, font_weight, font_style)
-                field_fonts[field_name] = styled_font
-                
-                # Calculate text width using textbbox
-                bbox = draw.textbbox((0, 0), str(text_value), font=styled_font)
-                text_width = bbox[2] - bbox[0]
-                field_widths[field_name] = text_width
-                print(f"🎯 Field {field_name}: '{text_value}' = {text_width}px wide")
-            
-            # Find the widest text to base centering on
-            max_width = max(field_widths.values())
-            widest_field = max(field_widths, key=field_widths.get)
-            print(f"🎯 Widest field: {widest_field} ({max_width}px)")
-            
-            # Get base position from widest field
-            # Calculate the visual center point of the template
-            template_center_x = template_image.width // 2
 
-            # Calculate center-aligned positions for all doctor fields
-            for field_name, text_value in doctor_text_data.items():
-                pos = positions[field_name]
-                field_width = field_widths[field_name]
-                styled_font = field_fonts[field_name]
-                
-                # Center each field based on template center, not relative to other fields
-                centered_x = template_center_x - (field_width // 2)
-                y_pos = int(pos['y'])  # Keep original Y position                
-                print(f"🎯 Rendering {field_name} at centered position ({centered_x}, {y_pos})")
-                
-                # Apply styling
-                color = pos.get('color', 'black')
-                font_style = pos.get('fontStyle', 'normal')
-                
-                # Text shadow
+                styled_font = get_font(font_family, font_size, font_weight, font_style)
+
+                # Use original fixed position for custom text (no responsive centering)
+                x_pos = int(pos['x'])
+                y_pos = int(pos['y'])
+
                 text_shadow = pos.get('textShadow', 'none')
                 if text_shadow != 'none':
                     shadow_info = parse_css_shadow(text_shadow)
                     if shadow_info:
                         draw.text(
-                            (centered_x + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
+                            (x_pos + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
                             str(text_value), fill=shadow_info['color'], font=styled_font
                         )
-                
-                # Render text with center alignment
-                # For cursive fonts, no need for italic simulation - they're naturally cursive
-                # For non-cursive fonts with italic style, apply simulation
-                if font_style in ['italic', 'oblique'] and pos.get('fontFamily', 'Arial') not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
+
+                if font_style in ['italic', 'oblique'] and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
                     for offset in range(3):
-                        draw.text((centered_x + offset, y_pos), str(text_value), fill=color, font=styled_font)
+                        draw.text((x_pos + offset, y_pos), str(text_value), fill=color, font=styled_font)
                 else:
-                    draw.text((centered_x, y_pos), str(text_value), fill=color, font=styled_font)
+                    draw.text((x_pos, y_pos), str(text_value), fill=color, font=styled_font)
+            # Optional doctor image overlay
+            image_settings = None
+            if content_data and 'imageSettings' in content_data:
+                image_settings = content_data['imageSettings']
+            elif template.text_positions and 'imageSettings' in template.text_positions:
+                image_settings = template.text_positions['imageSettings']
 
-        # Handle custom text separately (not part of doctor info centering)
-        # Handle custom text separately (not part of doctor info centering) - FIXED POSITION
-        if 'customText' in all_text_data and 'customText' in positions and all_text_data['customText']:
-            field_name = 'customText'
-            text_value = all_text_data[field_name]
-            pos = positions[field_name]
-            font_size = int(pos.get('fontSize', 40))
-            color = pos.get('color', 'black')
-            font_weight = pos.get('fontWeight', 'normal')
-            font_family = pos.get('fontFamily', 'Arial')
-            font_style = pos.get('fontStyle', 'normal')
-
-            styled_font = get_font(font_family, font_size, font_weight, font_style)
-
-            # Use original fixed position for custom text (no responsive centering)
-            x_pos = int(pos['x'])
-            y_pos = int(pos['y'])
-
-            text_shadow = pos.get('textShadow', 'none')
-            if text_shadow != 'none':
-                shadow_info = parse_css_shadow(text_shadow)
-                if shadow_info:
-                    draw.text(
-                        (x_pos + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
-                        str(text_value), fill=shadow_info['color'], font=styled_font
-                    )
-
-            if font_style in ['italic', 'oblique'] and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
-                for offset in range(3):
-                    draw.text((x_pos + offset, y_pos), str(text_value), fill=color, font=styled_font)
-            else:
-                draw.text((x_pos, y_pos), str(text_value), fill=color, font=styled_font)
-        # Optional doctor image overlay
-        image_settings = None
-        if content_data and 'imageSettings' in content_data:
-            image_settings = content_data['imageSettings']
-        elif template.text_positions and 'imageSettings' in template.text_positions:
-            image_settings = template.text_positions['imageSettings']
-
-        if image_settings and image_settings.get('enabled', False):
-            try:
-                logger.info(f"Doctor image enabled. Doctor: {doctor.name}")
-                logger.info(f"Doctor image field: {doctor.image}")
-                logger.info(f"Doctor image path: {doctor.image.path if doctor.image else 'None'}")
-                
-                img_x = int(image_settings.get('x', 400))
-                img_y = int(image_settings.get('y', 50))
-                img_width = int(image_settings.get('width', 150))
-                img_height = int(image_settings.get('height', 150))
-                img_fit = image_settings.get('fit', 'cover')
-                border_radius = int(image_settings.get('borderRadius', 0))
-                opacity = int(image_settings.get('opacity', 100))
-
-                if doctor.image and doctor.image.path and os.path.exists(doctor.image.path):
-                    doctor_img = Image.open(doctor.image.path)
-                    if img_fit == 'cover':
-                        doctor_img = doctor_img.resize((img_width, img_height), Image.Resampling.LANCZOS)
-                    elif img_fit == 'contain':
-                        doctor_img.thumbnail((img_width, img_height), Image.Resampling.LANCZOS)
-                    elif img_fit == 'stretch':
-                        doctor_img = doctor_img.resize((img_width, img_height), Image.Resampling.LANCZOS)
-                else:
-                    doctor_img = Image.new('RGB', (img_width, img_height), color='#4A90E2')
-                    draw_placeholder = ImageDraw.Draw(doctor_img)
-                    fsz = max(20, min(img_width, img_height) // 4)
-                    try:
-                        placeholder_font = ImageFont.truetype("arial.ttf", fsz)
-                    except:  # noqa: E722
-                        placeholder_font = ImageFont.load_default()
-                    draw_placeholder.text((img_width//2, img_height//2), "DR", fill='white', font=placeholder_font, anchor="mm")
-
-                if border_radius > 0:
-                    mask = Image.new('L', (doctor_img.width, doctor_img.height), 0)
-                    mask_draw = ImageDraw.Draw(mask)
-                    actual_radius = min(doctor_img.width, doctor_img.height) * border_radius // 200
-                    mask_draw.rounded_rectangle([(0, 0), (doctor_img.width, doctor_img.height)], radius=actual_radius, fill=255)
-                    if doctor_img.mode != 'RGBA':
-                        doctor_img = doctor_img.convert('RGBA')
-                    doctor_img.putalpha(mask)
-
-                if opacity < 100:
-                    if doctor_img.mode != 'RGBA':
-                        doctor_img = doctor_img.convert('RGBA')
-                    alpha = doctor_img.split()[-1]
-                    alpha = alpha.point(lambda p: int(p * opacity / 100))
-                    doctor_img.putalpha(alpha)
-
-                if template_image.mode != 'RGBA':
-                    template_image = template_image.convert('RGBA')
-                if doctor_img.mode == 'RGBA':
-                    template_image.paste(doctor_img, (img_x, img_y), doctor_img)
-                else:
-                    template_image.paste(doctor_img, (img_x, img_y))
-            except Exception as e:
-                logger.error(f"Error compositing doctor image: {e}")
-
-        #output_dir = os.path.join(settings.MEDIA_ROOT, "temp")
-
-        output_dir = os.path.join(settings.MEDIA_ROOT, "temp")
-
-        # Render brands in predefined area with smart layout
-# Render brands in predefined area with smart layout
-        if selected_brand_ids is None:
-            selected_brand_ids = content_data.get('selected_brands', [])
-        
-        print(f"🔍 Final selected_brand_ids after processing: {selected_brand_ids}")
-        print(f"🔍 Template brand_area_settings: {template.brand_area_settings}")
-        print(f"🔍 Brand area enabled: {template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
-        logger.info(f"Template ID: {template.id}, Template name: {template.name}")
-        logger.info(f"Brand area settings: {template.brand_area_settings}")
-        logger.info(f"Selected brand IDs: {selected_brand_ids}")
-        
-        print(f"🔍 Checking condition: selected_brand_ids={bool(selected_brand_ids)}, has_area_settings={bool(template.brand_area_settings)}, area_enabled={template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
-
-        if selected_brand_ids and template.brand_area_settings and template.brand_area_settings.get('enabled', False):
-            print("🔍 CONDITION MET - About to render brands")
-            print(f"🔍 Rendering {len(selected_brand_ids)} brands in defined area")
-            brands = Brand.objects.filter(id__in=selected_brand_ids)
-            print(f"🔍 Found {brands.count()} brands to render")
-            
-            # ADD DETAILED DEBUG
-            for brand in brands:
-                print(f"🔍 Brand: {brand.name}, Image: {brand.brand_image}")
-                if brand.brand_image:
-                    print(f"🔍 Brand image path: {brand.brand_image.path}")
-                    print(f"🔍 Path exists: {os.path.exists(brand.brand_image.path)}")
-            
-            print(f"🔍 About to call render_brands_in_area with area: {template.brand_area_settings}")
-            
-            try:
-                # Ensure template_image is in RGBA mode before brand rendering
-                if template_image.mode != 'RGBA':
-                    template_image = template_image.convert('RGBA')
+            if image_settings and image_settings.get('enabled', False):
+                try:
+                    logger.info(f"Doctor image enabled. Doctor: {doctor.name}")
+                    logger.info(f"Doctor image field: {doctor.image}")
+                    logger.info(f"Doctor image path: {doctor.image.path if doctor.image else 'None'}")
                     
-                self.render_brands_in_area(template_image, brands, template.brand_area_settings)
-                print("🔍 Successfully finished calling render_brands_in_area")
-            except Exception as e:
-                print(f"🔍 ERROR in render_brands_in_area: {e}")
-                import traceback
-                traceback.print_exc()
-        else:
-            print("🔍 CONDITION FAILED - Brand rendering skipped")
-            if not selected_brand_ids:
-                logger.info("No brands selected")
-                print("🔍 - No selected_brand_ids")
-            elif not template.brand_area_settings:
-                logger.info("No brand area settings defined for template")
-                print("🔍 - No brand_area_settings")
-            elif not template.brand_area_settings.get('enabled', False):
-                logger.info("Brand area not enabled for template")
-                print("🔍 - Brand area not enabled")
+                    img_x = int(image_settings.get('x', 400))
+                    img_y = int(image_settings.get('y', 50))
+                    img_width = int(image_settings.get('width', 150))
+                    img_height = int(image_settings.get('height', 150))
+                    img_fit = image_settings.get('fit', 'cover')
+                    border_radius = int(image_settings.get('borderRadius', 0))
+                    opacity = int(image_settings.get('opacity', 100))
 
-        # Save the final image AFTER all operations including brand rendering
-        os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, f"temp_image_{uuid.uuid4().hex}.png")
+                    if doctor.image and doctor.image.path and os.path.exists(doctor.image.path):
+                        doctor_img = Image.open(doctor.image.path)
+                        if img_fit == 'cover':
+                            doctor_img = doctor_img.resize((img_width, img_height), Image.Resampling.LANCZOS)
+                        elif img_fit == 'contain':
+                            doctor_img.thumbnail((img_width, img_height), Image.Resampling.LANCZOS)
+                        elif img_fit == 'stretch':
+                            doctor_img = doctor_img.resize((img_width, img_height), Image.Resampling.LANCZOS)
+                    else:
+                        doctor_img = Image.new('RGB', (img_width, img_height), color='#4A90E2')
+                        draw_placeholder = ImageDraw.Draw(doctor_img)
+                        fsz = max(20, min(img_width, img_height) // 4)
+                        try:
+                            placeholder_font = ImageFont.truetype("arial.ttf", fsz)
+                        except:  # noqa: E722
+                            placeholder_font = ImageFont.load_default()
+                        draw_placeholder.text((img_width//2, img_height//2), "DR", fill='white', font=placeholder_font, anchor="mm")
+
+                    if border_radius > 0:
+                        mask = Image.new('L', (doctor_img.width, doctor_img.height), 0)
+                        mask_draw = ImageDraw.Draw(mask)
+                        actual_radius = min(doctor_img.width, doctor_img.height) * border_radius // 200
+                        mask_draw.rounded_rectangle([(0, 0), (doctor_img.width, doctor_img.height)], radius=actual_radius, fill=255)
+                        if doctor_img.mode != 'RGBA':
+                            doctor_img = doctor_img.convert('RGBA')
+                        doctor_img.putalpha(mask)
+
+                    if opacity < 100:
+                        if doctor_img.mode != 'RGBA':
+                            doctor_img = doctor_img.convert('RGBA')
+                        alpha = doctor_img.split()[-1]
+                        alpha = alpha.point(lambda p: int(p * opacity / 100))
+                        doctor_img.putalpha(alpha)
+
+                    if template_image.mode != 'RGBA':
+                        template_image = template_image.convert('RGBA')
+                    if doctor_img.mode == 'RGBA':
+                        template_image.paste(doctor_img, (img_x, img_y), doctor_img)
+                    else:
+                        template_image.paste(doctor_img, (img_x, img_y))
+                except Exception as e:
+                    logger.error(f"Error compositing doctor image: {e}")
+
+            #output_dir = os.path.join(settings.MEDIA_ROOT, "temp")
+
+            output_dir = os.path.join(settings.MEDIA_ROOT, "temp")
+
+            # Render brands in predefined area with smart layout
+    # Render brands in predefined area with smart layout
+            if selected_brand_ids is None:
+                selected_brand_ids = content_data.get('selected_brands', [])
+            
+            print(f"🔍 Final selected_brand_ids after processing: {selected_brand_ids}")
+            print(f"🔍 Template brand_area_settings: {template.brand_area_settings}")
+            print(f"🔍 Brand area enabled: {template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
+            logger.info(f"Template ID: {template.id}, Template name: {template.name}")
+            logger.info(f"Brand area settings: {template.brand_area_settings}")
+            logger.info(f"Selected brand IDs: {selected_brand_ids}")
+            
+            print(f"🔍 Checking condition: selected_brand_ids={bool(selected_brand_ids)}, has_area_settings={bool(template.brand_area_settings)}, area_enabled={template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
+
+            if selected_brand_ids and template.brand_area_settings and template.brand_area_settings.get('enabled', False):
+                print("🔍 CONDITION MET - About to render brands")
+                print(f"🔍 Rendering {len(selected_brand_ids)} brands in defined area")
+                brands = Brand.objects.filter(id__in=selected_brand_ids)
+                print(f"🔍 Found {brands.count()} brands to render")
+                
+                # ADD DETAILED DEBUG
+                for brand in brands:
+                    print(f"🔍 Brand: {brand.name}, Image: {brand.brand_image}")
+                    if brand.brand_image:
+                        print(f"🔍 Brand image path: {brand.brand_image.path}")
+                        print(f"🔍 Path exists: {os.path.exists(brand.brand_image.path)}")
+                
+                print(f"🔍 About to call render_brands_in_area with area: {template.brand_area_settings}")
+                
+                try:
+                    # Ensure template_image is in RGBA mode before brand rendering
+                    if template_image.mode != 'RGBA':
+                        template_image = template_image.convert('RGBA')
+                        
+                    self.render_brands_in_area(template_image, brands, template.brand_area_settings)
+                    print("🔍 Successfully finished calling render_brands_in_area")
+                except Exception as e:
+                    print(f"🔍 ERROR in render_brands_in_area: {e}")
+                    import traceback
+                    traceback.print_exc()
+            else:
+                print("🔍 CONDITION FAILED - Brand rendering skipped")
+                if not selected_brand_ids:
+                    logger.info("No brands selected")
+                    print("🔍 - No selected_brand_ids")
+                elif not template.brand_area_settings:
+                    logger.info("No brand area settings defined for template")
+                    print("🔍 - No brand_area_settings")
+                elif not template.brand_area_settings.get('enabled', False):
+                    logger.info("Brand area not enabled for template")
+                    print("🔍 - Brand area not enabled")
+
+            # Save the final image AFTER all operations including brand rendering
+            os.makedirs(output_dir, exist_ok=True)
+            output_path = os.path.join(output_dir, f"temp_image_{uuid.uuid4().hex}.png")
+            
+            # Convert to RGB before saving to ensure compatibility
+            if template_image.mode == 'RGBA':
+                # Create white background and paste RGBA image on it
+                rgb_image = Image.new('RGB', template_image.size, (255, 255, 255))
+                rgb_image.paste(template_image, mask=template_image.split()[-1])
+                rgb_image.save(output_path)
+            else:
+                template_image.save(output_path)
+            
+            return output_path
+        #    
         
-        # Convert to RGB before saving to ensure compatibility
-        if template_image.mode == 'RGBA':
-            # Create white background and paste RGBA image on it
-            rgb_image = Image.new('RGB', template_image.size, (255, 255, 255))
-            rgb_image.paste(template_image, mask=template_image.split()[-1])
-            rgb_image.save(output_path)
-        else:
-            template_image.save(output_path)
+        except Exception as e:
+            logger.error(f"Image generation error: {e}")
+            raise
+        finally:
+            # Comprehensive cleanup
+            if template_image is not None:
+                try:
+                    template_image.close()
+                    del template_image
+                except:
+                    pass
+            if draw is not None:
+                try:
+                    del draw
+                except: 
+                    pass
+            # Clean up any brand images
+            if hasattr(self, '_current_brand_images'):
+                for brand_img in self._current_brand_images:
+                    try:
+                        brand_img.close()
+                        del brand_img
+                    except:
+                        pass
+                self._current_brand_images.clear()
+                delattr(self, '_current_brand_images')
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+                        
         
-        return output_path
-    
 
     def render_brands_in_area(self, template_image, brands, area_settings):
         """Render brands using predefined slots with smart centering"""
@@ -1785,17 +2348,54 @@ class GenerateImageContentView(APIView):
                     print(f"🔍 Slot {i+1} size: {slot_width}x{slot_height}")
                     
                     # Load and resize brand image
-                    brand_img = Image.open(brand.brand_image.path)
-                    if brand_img.mode != 'RGBA':
-                        brand_img = brand_img.convert('RGBA')
-                    
-                    brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
-                    
-                    # Paste brand image
-                    if template_image.mode != 'RGBA':
-                        template_image = template_image.convert('RGBA')
-                    
-                    template_image.paste(brand_img, (final_x, final_y), brand_img)
+                    # Load and resize brand image with memory management
+                    # Load and resize brand image with memory management
+                    brand_img = None
+                    try:
+                        if not os.path.exists(brand.brand_image.path):
+                            logger.warning(f"Brand image file not found: {brand.brand_image.path}")
+                            continue
+                            
+
+                        brand_img = Image.open(brand.brand_image.path)
+                        if hasattr(self, '_current_brand_images'):
+                            self._current_brand_images.append(brand_img)
+
+                        # Check image size before processing
+                        if brand_img.size[0] > 1000 or brand_img.size[1] > 1000:
+                            brand_img.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
+
+                        # Convert to RGB safely
+                        if brand_img.mode != 'RGB':
+                            try:
+                                rgb_img = Image.new('RGB', brand_img.size, (255, 255, 255))
+                                rgb_img.paste(brand_img.convert('RGBA'), (0, 0))
+                                brand_img.close()
+                                brand_img = rgb_img
+                                if hasattr(self, '_current_brand_images'):
+                                    self._current_brand_images[-1] = brand_img
+                            except Exception as e:
+                                logger.warning(f"Image conversion failed for {brand.name}: {e}")
+                                brand_img = brand_img.convert('RGB')
+                        
+                        # Resize brand image
+                        brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
+                        
+                        # Paste brand image
+                        if template_image.mode != 'RGBA':
+                            template_image = template_image.convert('RGBA')
+                        
+                        template_image.paste(brand_img, (final_x, final_y))
+                        
+                    except (IOError, OSError) as e:
+                        logger.warning(f"Failed to process brand image {brand.id}: {e}")
+                        continue
+                    finally:
+                        if brand_img is not None:
+                            try:
+                                brand_img.close()
+                            except:
+                                pass
                     
                     logger.info(f"Rendered brand {brand.name} in slot {i+1} at ({final_x}, {final_y})")
                     print(f"🔍 Successfully pasted brand {brand.name} at ({final_x}, {final_y})")
@@ -1823,6 +2423,7 @@ class ImageContentListView(APIView):
         serializer = ImageContentSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
+@method_decorator(ratelimit(key='ip', rate='30/m', method='GET', block=True), name='get')
 class DoctorSearchView(APIView):
     """Search doctor by mobile number or name"""
     def get(self, request):
@@ -1855,6 +2456,7 @@ class DoctorSearchView(APIView):
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
+# @ratelimit(key='ip', rate='10/m', method='POST', block=True)
 def AddEmployeeTemplates(request, template_type='video'):
     """Handle both video and image template creation"""
     try:
@@ -1907,7 +2509,8 @@ def getFilteredVideoTemplates(request):
 # ------------------------------------------------------------------------------
 
 class DoctorUpdateDeleteView(APIView):
-    permission_classes = []  # Explicitly override global auth
+    # permission_classes = []  # Explicitly override global auth
+    permission_classes = [AllowAny]
     authentication_classes = []
 
     def get_doctor(self, doctor_id, employee_id):
@@ -1945,21 +2548,39 @@ class DoctorUpdateDeleteView(APIView):
             employee_id = request.query_params.get('employee_id')
             if not employee_id:
                 return Response({'error': 'employee_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
             doctor = self.get_doctor(doctor_id, employee_id)
             doctor_name = doctor.name
+            
+            # Delete associated content first to avoid foreign key constraints
+            deleted_videos = DoctorOutputVideo.objects.filter(doctor=doctor).count()
+            deleted_images = ImageContent.objects.filter(doctor=doctor).count()
+            
             DoctorOutputVideo.objects.filter(doctor=doctor).delete()
             ImageContent.objects.filter(doctor=doctor).delete()
+            
+            # Delete the doctor
             doctor.delete()
-            return Response({'status': 'success', 'message': f'Doctor {doctor_name} and all associated content deleted successfully'})
+            
+            return Response({
+                'status': 'success', 
+                'message': f'Doctor {doctor_name} deleted successfully. Removed {deleted_videos} videos and {deleted_images} images.',
+                'deleted_content': {
+                    'videos': deleted_videos,
+                    'images': deleted_images
+                }
+            })
         except PermissionError as e:
             return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
+            logger.error(f"Error deleting doctor {doctor_id}: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # ------------------------------------------------------------------------------
 # Regenerate Content (video/image) with permissions
 # ------------------------------------------------------------------------------
 
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
 class RegenerateContentView(APIView):
     permission_classes = []
     authentication_classes = []
@@ -2089,6 +2710,7 @@ class DeleteContentView(APIView):
 class BrandListAPIView(generics.ListAPIView):
     queryset = Brand.objects.all().order_by('category', 'name')
     serializer_class = BrandSerializer
+    permission_classes = [AllowAny]  # Add this line
     
     def get(self, request, *args, **kwargs):
         brands = self.get_queryset()
@@ -2115,31 +2737,65 @@ class BrandListAPIView(generics.ListAPIView):
         })
 
 class ImageTemplateUsageView(APIView):
+    # throttle_classes = [BurstRateThrottle]
+    
+    @method_decorator(cache_page(300))  # Cache for 5 minutes
     def get(self, request):
-        # Get template usage counts
-        template_counts = ImageContent.objects.values(
-            "template__id", 
-            "template__name"
+        # Optimized single query with aggregation
+        template_data = ImageContent.objects.select_related('template', 'doctor').values(
+            'template__id', 'template__name'
         ).annotate(
-            usage_count=Count("id")
-        ).order_by("-usage_count")
+            usage_count=Count('id'),
+            doctor_names=ArrayAgg('doctor__name', distinct=True)
+        ).filter(
+            template__id__isnull=False
+        ).order_by('-usage_count')
         
-        # Get doctor names for each template separately
-        data = []
-        for item in template_counts:
-            if item["template__id"] is not None:
-                # Get doctor names for this specific template - use 'doctor' not 'doctor_info'
-                doctor_names = ImageContent.objects.filter(
-                    template__id=item["template__id"]
-                ).values_list(
-                    "doctor__name", flat=True  # Changed from doctor_info__name to doctor__name
-                ).distinct()
-                
-                data.append({
-                    "template_id": item["template__id"],
-                    "template_name": item["template__name"],
-                    "usage_count": item["usage_count"],
-                    "doctor_names": [name for name in doctor_names if name]
-                })
+        data = [{
+            "template_id": item["template__id"],
+            "template_name": item["template__name"],
+            "usage_count": item["usage_count"],
+            "doctor_names": [name for name in (item["doctor_names"] or []) if name]
+        } for item in template_data]
         
         return Response(data, status=status.HTTP_200_OK)
+    
+
+from celery.result import AsyncResult
+
+class TaskStatusView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request, task_id):
+        """Check image generation status"""
+        result = AsyncResult(task_id)
+        
+        if result.ready():
+            if result.successful():
+                task_result = result.get()
+                # Get the actual image content
+                if 'image_id' in task_result:
+                    try:
+                        image_content = ImageContent.objects.get(id=task_result['image_id'])
+                        serializer = ImageContentSerializer(image_content, context={'request': request})
+                        return Response({
+                            "status": "completed",
+                            "result": serializer.data
+                        })
+                    except ImageContent.DoesNotExist:
+                        pass
+                        
+                return Response({"status": "completed", "result": task_result})
+            else:
+                return Response({"status": "failed", "error": str(result.info)})
+        else:
+            return Response({"status": "processing"})
+        
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def test_cors(request):
+    return JsonResponse({"status": "CORS working", "method": request.method})

@@ -9,7 +9,7 @@ class Employee(models.Model):
         ('SuperAdmin', 'SuperAdmin'),
     ]
 
-    employee_id = models.CharField(max_length=10, unique=True)
+    employee_id = models.CharField(max_length=10, unique=True, db_index=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(unique=True, null=True, blank=True)
@@ -51,15 +51,15 @@ class EmployeeLoginHistory(models.Model):
 
 
 class DoctorVideo(models.Model):
-    name = models.CharField(max_length=285)
+    name = models.CharField(max_length=285, db_index=True)
     designation = models.CharField(max_length=255)
     clinic = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
+    city = models.CharField(max_length=100, db_index=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='doctor_images/')
-    specialization = models.CharField(max_length=255)
+    specialization = models.CharField(max_length=255, db_index=True)
     specialization_key = models.CharField(max_length=255, null=True, blank=True)
-    mobile_number = models.CharField(max_length=15)
+    mobile_number = models.CharField(max_length=15, unique=True, db_index=True)
     whatsapp_number = models.CharField(max_length=15)
     description = models.TextField()
     output_video = models.FileField(upload_to='output/', null=True, blank=True)
@@ -69,6 +69,15 @@ class DoctorVideo(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['employee', 'created_at']),
+            models.Index(fields=['mobile_number', 'name']),
+            models.Index(fields=['specialization', 'city']),
+            models.Index(fields=['created_at', 'employee']),  # For pagination
+            models.Index(fields=['name', 'specialization']),  # For search
+        ]
     
 
 class Doctor(models.Model):
@@ -99,6 +108,14 @@ class VideoTemplates(models.Model):
     
     name = models.CharField(max_length=100,null=True, blank=True)
     template_video = models.FileField(upload_to='video-template/')
+    created_by = models.ForeignKey(
+        Employee, 
+        on_delete=models.CASCADE, 
+        related_name='created_templates',
+        null=True, 
+        blank=True
+    )
+    is_public = models.BooleanField(default=True)
     base_x_axis = models.CharField(max_length=100,null=True, blank=True)
     base_y_axis = models.CharField(max_length=100,null=True, blank=True)
     overlay_x = models.CharField(max_length=100,null=True, blank=True)
@@ -181,7 +198,7 @@ def doctor_video_upload_path(instance, filename):
 
 class DoctorOutputVideo(models.Model):
 
-    doctor = models.ForeignKey(DoctorVideo, on_delete=models.CASCADE, null=True, blank=True)
+    doctor = models.ForeignKey(DoctorVideo, on_delete=models.CASCADE, null=True, blank=True, related_name='doctor_videos')
     template = models.ForeignKey(VideoTemplates, on_delete=models.SET_NULL,null=True,blank=True)
     video_file = models.FileField(upload_to=doctor_video_upload_path)
     created_at = models.DateTimeField(auto_now_add=True)

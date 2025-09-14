@@ -1,0 +1,4657 @@
+[
+{
+  "model": "employee_app.employee",
+  "pk": 1,
+  "fields": {
+    "employee_id": "I4525",
+    "first_name": "Atharva",
+    "last_name": "Nag",
+    "email": "bidyut@gmail.com",
+    "phone": "9876543210",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-19T12:01:08.756Z",
+    "rbm": 1,
+    "city": "Kolkata",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 2,
+  "fields": {
+    "employee_id": "I4569",
+    "first_name": "Pratham",
+    "last_name": "Dey",
+    "email": "pratham@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-30T13:38:31.618Z",
+    "rbm": 1,
+    "city": "North Kolkata 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 3,
+  "fields": {
+    "employee_id": "I4568",
+    "first_name": "Ankur",
+    "last_name": "Majumder",
+    "email": "ankur@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T14:47:41.389Z",
+    "rbm": 1,
+    "city": "North Kolkata 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 4,
+  "fields": {
+    "employee_id": "I4566",
+    "first_name": "Nabadweeptya",
+    "last_name": "Chatterjee",
+    "email": "nabadweeptya@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T17:40:21.168Z",
+    "rbm": 1,
+    "city": "North 24 - 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 5,
+  "fields": {
+    "employee_id": "I4572",
+    "first_name": "Sourav",
+    "last_name": "Barua",
+    "email": "sourav@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T02:45:13.001Z",
+    "rbm": 1,
+    "city": "North 24 - 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 6,
+  "fields": {
+    "employee_id": "I4564",
+    "first_name": "Atanu",
+    "last_name": "Ghosh",
+    "email": "atanu@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:40:09.024Z",
+    "rbm": 1,
+    "city": "Kolkata-Central 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 7,
+  "fields": {
+    "employee_id": "I4690",
+    "first_name": "Puskar",
+    "last_name": "Sau",
+    "email": "puskar@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T11:08:54.944Z",
+    "rbm": 1,
+    "city": "South Kolkata 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 8,
+  "fields": {
+    "employee_id": "I4560",
+    "first_name": "Manoranjan",
+    "last_name": "Bera",
+    "email": "manoranjan@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T01:43:04.619Z",
+    "rbm": 1,
+    "city": "South Kolkata 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 9,
+  "fields": {
+    "employee_id": "I4561",
+    "first_name": "Snehashis",
+    "last_name": "Kar",
+    "email": "snehashis@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T02:46:46.386Z",
+    "rbm": 1,
+    "city": "Kolkata-Central 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 10,
+  "fields": {
+    "employee_id": "I4781",
+    "first_name": "Prasenjit",
+    "last_name": "Sarkar",
+    "email": "prasenjit@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-06T08:57:08.612Z",
+    "rbm": 1,
+    "city": "Bardhaman",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 11,
+  "fields": {
+    "employee_id": "I4782",
+    "first_name": "Shyamal",
+    "last_name": "Shil",
+    "email": "shyamal@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T09:24:31.229Z",
+    "rbm": 1,
+    "city": "Bardhaman",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 12,
+  "fields": {
+    "employee_id": "I4693",
+    "first_name": "Monojeet",
+    "last_name": "Dey",
+    "email": "monojeet@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T18:32:00.272Z",
+    "rbm": 1,
+    "city": "Asansol",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 13,
+  "fields": {
+    "employee_id": "I4686",
+    "first_name": "Sovan",
+    "last_name": "Roy",
+    "email": "sovan@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-15T04:07:05.947Z",
+    "rbm": 1,
+    "city": "Paschim Medinipur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 14,
+  "fields": {
+    "employee_id": "I4643",
+    "first_name": "Subhankar",
+    "last_name": "Dutta",
+    "email": "subhankar@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-08T07:01:11.607Z",
+    "rbm": 14,
+    "city": "Guwahati",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 15,
+  "fields": {
+    "employee_id": "I4708",
+    "first_name": "Dheeraj",
+    "last_name": "Bharali",
+    "email": "dheeraj@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-06T16:45:54.535Z",
+    "rbm": 14,
+    "city": "Guwahati",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 16,
+  "fields": {
+    "employee_id": "I4700",
+    "first_name": "Prit",
+    "last_name": "Shah",
+    "email": "prit@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T04:33:39.704Z",
+    "rbm": 14,
+    "city": "Dibrugarh",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 17,
+  "fields": {
+    "employee_id": "I4679",
+    "first_name": "Subham",
+    "last_name": "Deb",
+    "email": "subham@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T15:54:41.071Z",
+    "rbm": 14,
+    "city": "Agartala",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 18,
+  "fields": {
+    "employee_id": "I4713",
+    "first_name": "DEBASISH",
+    "last_name": "SAHA",
+    "email": "debasish@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T11:48:54.780Z",
+    "rbm": 187,
+    "city": "Siliguri",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 19,
+  "fields": {
+    "employee_id": "I4678",
+    "first_name": "Koushik",
+    "last_name": "Roy",
+    "email": "koushik@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-15T15:34:22.219Z",
+    "rbm": 14,
+    "city": "Siliguri-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 20,
+  "fields": {
+    "employee_id": "I4715",
+    "first_name": "Sukanta",
+    "last_name": "Ghosh",
+    "email": "sukanta@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T04:35:08.371Z",
+    "rbm": 14,
+    "city": "Siliguri-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 21,
+  "fields": {
+    "employee_id": "I4563",
+    "first_name": "Nitul",
+    "last_name": "Kundu",
+    "email": "nitul@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T09:56:28.122Z",
+    "rbm": 14,
+    "city": "Behrampore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 22,
+  "fields": {
+    "employee_id": "I4518",
+    "first_name": "Vinamra",
+    "last_name": "Priya",
+    "email": "vinamra@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-20T04:55:56.404Z",
+    "rbm": 22,
+    "city": "Patna",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 23,
+  "fields": {
+    "employee_id": "I4557",
+    "first_name": "Abhijeet",
+    "last_name": "Gaurav",
+    "email": "abhijeet@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-02T15:53:47.450Z",
+    "rbm": 22,
+    "city": "Patna",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 24,
+  "fields": {
+    "employee_id": "I456K",
+    "first_name": "Kumar",
+    "last_name": "Gaurav",
+    "email": "kumar@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T15:16:37.972Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 25,
+  "fields": {
+    "employee_id": "I4790",
+    "first_name": "Sanjeeb",
+    "last_name": "Sathia",
+    "email": "sanjeeb@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T02:54:04.513Z",
+    "rbm": 22,
+    "city": "Cuttack",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 26,
+  "fields": {
+    "employee_id": "I4706",
+    "first_name": "Chiranjeevi",
+    "last_name": "Janugani",
+    "email": "chiranjeevi@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T08:47:19.387Z",
+    "rbm": 26,
+    "city": "Hyderabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 27,
+  "fields": {
+    "employee_id": "I4702",
+    "first_name": "Gandi",
+    "last_name": "Parmesh",
+    "email": "gandi@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T03:20:02.161Z",
+    "rbm": 26,
+    "city": "Hyd-Dilsuknagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 28,
+  "fields": {
+    "employee_id": "I4213",
+    "first_name": "Pallapu",
+    "last_name": "Shankar",
+    "email": "pallapu@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T04:08:42.234Z",
+    "rbm": 26,
+    "city": "Hyd-Panjagutta",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 29,
+  "fields": {
+    "employee_id": "I4699",
+    "first_name": "Ramesh",
+    "last_name": "Peddi",
+    "email": "ramesh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-15T05:12:11.688Z",
+    "rbm": 26,
+    "city": "Hyd-Central City",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 30,
+  "fields": {
+    "employee_id": "I4673",
+    "first_name": "Ravi",
+    "last_name": "P",
+    "email": "ravi@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-28T10:26:06.219Z",
+    "rbm": 26,
+    "city": "Hyderabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 31,
+  "fields": {
+    "employee_id": "I4751",
+    "first_name": "Orsu",
+    "last_name": "Saikumar",
+    "email": "orsu@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T12:11:48.435Z",
+    "rbm": 26,
+    "city": "Hyd-Sec'Bad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 32,
+  "fields": {
+    "employee_id": "I4689",
+    "first_name": "Godegoni",
+    "last_name": "Prakesh",
+    "email": "godegoni@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-29T16:52:55.636Z",
+    "rbm": 26,
+    "city": "Karimnagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 33,
+  "fields": {
+    "employee_id": "I3265",
+    "first_name": "Kiran",
+    "last_name": "Kumar",
+    "email": "kiran@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T17:01:08.944Z",
+    "rbm": 26,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 34,
+  "fields": {
+    "employee_id": "I3266",
+    "first_name": "Sajjanapu",
+    "last_name": "Akhil",
+    "email": "sajjanapu@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T14:39:43.396Z",
+    "rbm": 26,
+    "city": "Warangal",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 35,
+  "fields": {
+    "employee_id": "I4652",
+    "first_name": "Velpula",
+    "last_name": "Ramu",
+    "email": "velpula@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Khammam",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 36,
+  "fields": {
+    "employee_id": "I3069",
+    "first_name": "Muli",
+    "last_name": "Vikram",
+    "email": "muli@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T07:09:39.149Z",
+    "rbm": 36,
+    "city": "Vijayawada",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 37,
+  "fields": {
+    "employee_id": "I1740",
+    "first_name": "Amudalapalli",
+    "last_name": "Raviteja",
+    "email": "amudalapalli@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Vijayawada",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 38,
+  "fields": {
+    "employee_id": "I2682",
+    "first_name": "Malli",
+    "last_name": "Subbarayudu",
+    "email": "malli@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T02:05:58.910Z",
+    "rbm": 36,
+    "city": "Nellore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 39,
+  "fields": {
+    "employee_id": "I4559",
+    "first_name": "B",
+    "last_name": "Naveen",
+    "email": "b@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T03:53:42.769Z",
+    "rbm": 36,
+    "city": "Kurnool",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 40,
+  "fields": {
+    "employee_id": "I4791",
+    "first_name": "Chilamala",
+    "last_name": "Ramesh",
+    "email": "chilamala@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:55:50.148Z",
+    "rbm": 36,
+    "city": "Anantapur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 41,
+  "fields": {
+    "employee_id": "I4332",
+    "first_name": "P",
+    "last_name": "Bhaskar",
+    "email": "p@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T05:33:29.849Z",
+    "rbm": 36,
+    "city": "Tirupati",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 42,
+  "fields": {
+    "employee_id": "I475D",
+    "first_name": "Sivakumar",
+    "last_name": "Dandeti",
+    "email": "sivakumar@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 43,
+  "fields": {
+    "employee_id": "I4666",
+    "first_name": "Lingubothu",
+    "last_name": "Appalanaidu",
+    "email": "lingubothu@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T11:31:20.389Z",
+    "rbm": 36,
+    "city": "Vizag-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 44,
+  "fields": {
+    "employee_id": "I4230",
+    "first_name": "Apu",
+    "last_name": "Paul",
+    "email": "apu@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T05:32:19.918Z",
+    "rbm": 140,
+    "city": "Bang-Jayanagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 45,
+  "fields": {
+    "employee_id": "I4780",
+    "first_name": "Sudarsana",
+    "last_name": "V",
+    "email": "sudarsana@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T09:58:30.647Z",
+    "rbm": 140,
+    "city": "Bang-Indranager",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 46,
+  "fields": {
+    "employee_id": "I4567",
+    "first_name": "Kishan",
+    "last_name": "Kumar",
+    "email": "kishan@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T15:06:53.059Z",
+    "rbm": 140,
+    "city": "Bang-Jp Nagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 47,
+  "fields": {
+    "employee_id": "I4579",
+    "first_name": "G",
+    "last_name": "Kiran",
+    "email": "g@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-24T09:03:07.117Z",
+    "rbm": 140,
+    "city": "Bellary",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 48,
+  "fields": {
+    "employee_id": "I4575",
+    "first_name": "Venkataranganayaka",
+    "last_name": "D",
+    "email": "venkataranganayaka@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T15:18:51.001Z",
+    "rbm": 140,
+    "city": "Mysore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 49,
+  "fields": {
+    "employee_id": "I4748",
+    "first_name": "Prithiviraj",
+    "last_name": "S",
+    "email": "prithiviraj@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T03:24:27.566Z",
+    "rbm": 26,
+    "city": "Chennai-South",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 50,
+  "fields": {
+    "employee_id": "I4695",
+    "first_name": "Praveen",
+    "last_name": "D",
+    "email": "praveen@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-23T08:31:30.945Z",
+    "rbm": 150,
+    "city": "Chennai-Mylapore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 51,
+  "fields": {
+    "employee_id": "I4238",
+    "first_name": "Thulasiraman",
+    "last_name": "nan",
+    "email": "thulasiraman@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T12:45:24.879Z",
+    "rbm": 150,
+    "city": "Chennai-Vadapalani",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 52,
+  "fields": {
+    "employee_id": "I4701",
+    "first_name": "Bharathi",
+    "last_name": "A",
+    "email": "bharathi@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-02T12:51:20.710Z",
+    "rbm": 150,
+    "city": "Pondicherry",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 53,
+  "fields": {
+    "employee_id": "I4672",
+    "first_name": "S",
+    "last_name": "Karthik",
+    "email": "s@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T15:58:26.131Z",
+    "rbm": 150,
+    "city": "Chennai-Anna Nagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 54,
+  "fields": {
+    "employee_id": "I4727",
+    "first_name": "K",
+    "last_name": "Gunasekaran",
+    "email": "k@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-14T10:30:37.515Z",
+    "rbm": 108,
+    "city": "Salem",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 55,
+  "fields": {
+    "employee_id": "I4692",
+    "first_name": "Selvakumar",
+    "last_name": "Ponnuvel",
+    "email": "selvakumar@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:41:40.239Z",
+    "rbm": 150,
+    "city": "Salem",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 56,
+  "fields": {
+    "employee_id": "I4040",
+    "first_name": "Ganesan",
+    "last_name": "Munusamy",
+    "email": "ganesan@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T07:37:12.048Z",
+    "rbm": 150,
+    "city": "Dharmapuri",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 57,
+  "fields": {
+    "employee_id": "I4667",
+    "first_name": "Pari",
+    "last_name": "A",
+    "email": "pari@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T11:40:19.731Z",
+    "rbm": 150,
+    "city": "Cuddalore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 58,
+  "fields": {
+    "employee_id": "I4625",
+    "first_name": "Manikandan",
+    "last_name": "J",
+    "email": "manikandan@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Trichy",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 59,
+  "fields": {
+    "employee_id": "I4703",
+    "first_name": "Sriman",
+    "last_name": "R",
+    "email": "sriman@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T10:20:53.583Z",
+    "rbm": 155,
+    "city": "Trichy",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 60,
+  "fields": {
+    "employee_id": "I4142",
+    "first_name": "Barathkumar",
+    "last_name": "Ganesan",
+    "email": "barathkumar@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T08:16:50.885Z",
+    "rbm": 155,
+    "city": "Thanjavur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 61,
+  "fields": {
+    "employee_id": "I4758",
+    "first_name": "Karthikeyan",
+    "last_name": "nan",
+    "email": "karthikeyan@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T03:19:09.954Z",
+    "rbm": 155,
+    "city": "Kumbakonam",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 62,
+  "fields": {
+    "employee_id": "I3448",
+    "first_name": "Padmanaban",
+    "last_name": "Sikkannan",
+    "email": "padmanaban@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-16T05:46:46.903Z",
+    "rbm": 155,
+    "city": "Madurai-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 63,
+  "fields": {
+    "employee_id": "I4254",
+    "first_name": "Siva",
+    "last_name": "S",
+    "email": "siva@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T09:20:20.971Z",
+    "rbm": 155,
+    "city": "Nagercoil",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 64,
+  "fields": {
+    "employee_id": "I4783",
+    "first_name": "Aravindharaj",
+    "last_name": "P",
+    "email": "aravindharaj@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T13:32:04.834Z",
+    "rbm": 155,
+    "city": "Coimbatore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 65,
+  "fields": {
+    "employee_id": "I4196",
+    "first_name": "Thastahir",
+    "last_name": "S",
+    "email": "thastahir@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T09:52:00.721Z",
+    "rbm": 155,
+    "city": "Coimbatore-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 66,
+  "fields": {
+    "employee_id": "I4022",
+    "first_name": "M",
+    "last_name": "Srinivasan",
+    "email": "m@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-28T06:40:40.437Z",
+    "rbm": 155,
+    "city": "Coimbatore-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 67,
+  "fields": {
+    "employee_id": "I3402",
+    "first_name": "Nandhakumar",
+    "last_name": "Arjunan",
+    "email": "nandhakumar@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-16T06:23:10.960Z",
+    "rbm": 155,
+    "city": "Erode",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 68,
+  "fields": {
+    "employee_id": "I4655",
+    "first_name": "Rajeev",
+    "last_name": "K",
+    "email": "rajeev@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:40:27.107Z",
+    "rbm": 232,
+    "city": "Calicut-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 69,
+  "fields": {
+    "employee_id": "I4752",
+    "first_name": "Akhilesh",
+    "last_name": "K",
+    "email": "akhilesh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T08:39:47.212Z",
+    "rbm": 232,
+    "city": "Kanhangad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 70,
+  "fields": {
+    "employee_id": "I4649",
+    "first_name": "Ajith",
+    "last_name": "C",
+    "email": "ajith@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-08T09:41:21.816Z",
+    "rbm": 232,
+    "city": "Palakkad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 71,
+  "fields": {
+    "employee_id": "I4729",
+    "first_name": "Akhil",
+    "last_name": "SU",
+    "email": "akhil@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T18:19:30.138Z",
+    "rbm": 219,
+    "city": "Trivandrum-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 72,
+  "fields": {
+    "employee_id": "I4546",
+    "first_name": "Lalit",
+    "last_name": "Kumar",
+    "email": "lalit@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-11T06:09:57.101Z",
+    "rbm": 72,
+    "city": "Delhi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 73,
+  "fields": {
+    "employee_id": "I4526",
+    "first_name": "Shashank",
+    "last_name": "Tyagi.",
+    "email": "shashank@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-24T14:46:04.631Z",
+    "rbm": null,
+    "city": "North Delhi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 74,
+  "fields": {
+    "employee_id": "I4734",
+    "first_name": "Sourabh",
+    "last_name": "Shukla",
+    "email": "sourabh@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-06T15:51:39.917Z",
+    "rbm": 72,
+    "city": "West Delhi 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 75,
+  "fields": {
+    "employee_id": "I4668",
+    "first_name": "Mohit",
+    "last_name": "Singh.",
+    "email": "mohit@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T03:47:27.074Z",
+    "rbm": 72,
+    "city": "East Delhi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 76,
+  "fields": {
+    "employee_id": "I4720",
+    "first_name": "Deepanshu",
+    "last_name": "Mavi",
+    "email": "deepanshu@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-17T18:17:13.124Z",
+    "rbm": 72,
+    "city": "East Delhi 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 77,
+  "fields": {
+    "employee_id": "I4764",
+    "first_name": "Sahil",
+    "last_name": "nan",
+    "email": "sahil@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T02:48:11.395Z",
+    "rbm": 22,
+    "city": "Central Delhi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 78,
+  "fields": {
+    "employee_id": "I4527",
+    "first_name": "Aashish",
+    "last_name": "Paliwal",
+    "email": "aashish@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-23T13:46:18.674Z",
+    "rbm": null,
+    "city": "Delhi/Gurgaon",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 79,
+  "fields": {
+    "employee_id": "I4765",
+    "first_name": "Prince",
+    "last_name": "Kumar",
+    "email": "prince@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T06:13:54.666Z",
+    "rbm": 72,
+    "city": "South Delhi-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 80,
+  "fields": {
+    "employee_id": "I4651",
+    "first_name": "Surinder",
+    "last_name": "Singh",
+    "email": "surinder@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T03:27:10.451Z",
+    "rbm": 80,
+    "city": "Chandigarh",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 81,
+  "fields": {
+    "employee_id": "I470K",
+    "first_name": "Kush",
+    "last_name": "Arora",
+    "email": "kush@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 82,
+  "fields": {
+    "employee_id": "I470S",
+    "first_name": "Siddharth",
+    "last_name": "nan",
+    "email": "siddharth@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-17T14:59:45.728Z",
+    "rbm": 80,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 83,
+  "fields": {
+    "employee_id": "I470G",
+    "first_name": "Gaganjit",
+    "last_name": "Singh",
+    "email": "gaganjit@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-16T15:30:56.006Z",
+    "rbm": 80,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 84,
+  "fields": {
+    "employee_id": "I4705",
+    "first_name": "Jatin",
+    "last_name": "Kumar",
+    "email": "jatin@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T14:40:16.826Z",
+    "rbm": 80,
+    "city": "Bathinda",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 85,
+  "fields": {
+    "employee_id": "I4762",
+    "first_name": "Nitin",
+    "last_name": "Kumar",
+    "email": "nitin@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T09:55:06.141Z",
+    "rbm": 80,
+    "city": "Ludhiana",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 86,
+  "fields": {
+    "employee_id": "I4719",
+    "first_name": "Manik",
+    "last_name": "Seth",
+    "email": "manik@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-03T08:49:45.176Z",
+    "rbm": 80,
+    "city": "Amritsar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 87,
+  "fields": {
+    "employee_id": "I4787",
+    "first_name": "Ayush",
+    "last_name": "Sharma",
+    "email": "ayush@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T09:51:51.623Z",
+    "rbm": 80,
+    "city": "Ludhiana",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 88,
+  "fields": {
+    "employee_id": "I4789",
+    "first_name": "Junaid",
+    "last_name": "Rafiq",
+    "email": "junaid@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-21T05:01:49.486Z",
+    "rbm": 80,
+    "city": "Srinagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 89,
+  "fields": {
+    "employee_id": "I4517",
+    "first_name": "Balram",
+    "last_name": "Bagaria",
+    "email": "balram@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-06T08:46:57.383Z",
+    "rbm": 89,
+    "city": "Jaipur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 90,
+  "fields": {
+    "employee_id": "I4694",
+    "first_name": "Anil",
+    "last_name": "Kumar",
+    "email": "anil@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-17T17:17:11.251Z",
+    "rbm": 89,
+    "city": "Jaipur-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 91,
+  "fields": {
+    "employee_id": "I4776",
+    "first_name": "Sanjay",
+    "last_name": "Kumar..",
+    "email": "sanjay@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T10:52:32.447Z",
+    "rbm": 89,
+    "city": "Jaipur-3",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 92,
+  "fields": {
+    "employee_id": "I477D",
+    "first_name": "Deepak",
+    "last_name": "Kumar",
+    "email": "deepak@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-06T09:06:21.006Z",
+    "rbm": 89,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 93,
+  "fields": {
+    "employee_id": "I4670",
+    "first_name": "Deepandra",
+    "last_name": "Yadav",
+    "email": "deepandra@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T08:11:52.288Z",
+    "rbm": 89,
+    "city": "Jodhpur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 94,
+  "fields": {
+    "employee_id": "I4687",
+    "first_name": "Kanhaiya",
+    "last_name": "Lal",
+    "email": "kanhaiya@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-17T08:30:27.686Z",
+    "rbm": 89,
+    "city": "Sri Ganga Nagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 95,
+  "fields": {
+    "employee_id": "I4677",
+    "first_name": "Devendra",
+    "last_name": "Suryawanshi",
+    "email": "devendra@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T07:59:57.853Z",
+    "rbm": 120,
+    "city": "Indore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 96,
+  "fields": {
+    "employee_id": "I4704",
+    "first_name": "Motilal",
+    "last_name": "Sharma",
+    "email": "motilal@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T04:18:43.799Z",
+    "rbm": 183,
+    "city": "Meerut",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 97,
+  "fields": {
+    "employee_id": "I4637",
+    "first_name": "Harsha",
+    "last_name": "Sharma",
+    "email": "harsha@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T16:51:27.458Z",
+    "rbm": 183,
+    "city": "Ghaziabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 98,
+  "fields": {
+    "employee_id": "I4798",
+    "first_name": "Anubhav",
+    "last_name": "Singh",
+    "email": "anubhav@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T18:15:38.330Z",
+    "rbm": 183,
+    "city": "Bareilly",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 99,
+  "fields": {
+    "employee_id": "I4570",
+    "first_name": "Suraj",
+    "last_name": "Kumar",
+    "email": "suraj@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T15:21:41.564Z",
+    "rbm": 183,
+    "city": "Agra",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 100,
+  "fields": {
+    "employee_id": "I4565",
+    "first_name": "Shivakant",
+    "last_name": "Verma",
+    "email": "shivakant@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:49:26.102Z",
+    "rbm": 187,
+    "city": "Lucknow-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 101,
+  "fields": {
+    "employee_id": "I4646",
+    "first_name": "Kartikey",
+    "last_name": "Pathak",
+    "email": "kartikey@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:47:28.063Z",
+    "rbm": 187,
+    "city": "Lucknow-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 102,
+  "fields": {
+    "employee_id": "I4665",
+    "first_name": "Awnish",
+    "last_name": "Maurya",
+    "email": "awnish@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T01:34:07.851Z",
+    "rbm": 187,
+    "city": "Faizabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 103,
+  "fields": {
+    "employee_id": "I4642",
+    "first_name": "Gokul",
+    "last_name": "Prasad",
+    "email": "gokul@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T05:03:26.845Z",
+    "rbm": 187,
+    "city": "Kanpur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 104,
+  "fields": {
+    "employee_id": "I4714",
+    "first_name": "Lavkush",
+    "last_name": "Yadav",
+    "email": "lavkush@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T15:58:31.353Z",
+    "rbm": 187,
+    "city": "Varanasi-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 105,
+  "fields": {
+    "employee_id": "I4709",
+    "first_name": "Shivam",
+    "last_name": "Sing",
+    "email": "shivam@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-17T16:01:21.917Z",
+    "rbm": 187,
+    "city": "Varanasi-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 106,
+  "fields": {
+    "employee_id": "I4558",
+    "first_name": "Alok",
+    "last_name": "Kumar",
+    "email": "alok@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T15:58:56.349Z",
+    "rbm": 187,
+    "city": "Allahabad (Prayagraj)",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 107,
+  "fields": {
+    "employee_id": "I4574",
+    "first_name": "Saransh",
+    "last_name": "Mishra",
+    "email": "saransh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-03T07:05:42.417Z",
+    "rbm": 187,
+    "city": "Gorakhpur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 108,
+  "fields": {
+    "employee_id": "I2073",
+    "first_name": "Amol",
+    "last_name": "Kurkute",
+    "email": "amol@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-16T11:58:57.718Z",
+    "rbm": null,
+    "city": "Mumbai",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 109,
+  "fields": {
+    "employee_id": "I4537",
+    "first_name": "Chandrakant",
+    "last_name": "Yadav",
+    "email": "chandrakant@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T04:31:04.419Z",
+    "rbm": 108,
+    "city": "Mumbai -Andheri",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 110,
+  "fields": {
+    "employee_id": "I4688",
+    "first_name": "Mehul",
+    "last_name": "Patil",
+    "email": "mehul@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T15:30:11.588Z",
+    "rbm": 108,
+    "city": "Mumbai -Panvel",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 111,
+  "fields": {
+    "employee_id": "I4632",
+    "first_name": "Aniket",
+    "last_name": "Kumar.",
+    "email": "aniket@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-15T13:03:26.498Z",
+    "rbm": 108,
+    "city": "Mumbai -Ghatkopar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 112,
+  "fields": {
+    "employee_id": "I4630",
+    "first_name": "Vikash",
+    "last_name": "Kumar..",
+    "email": "vikash@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T14:05:59.551Z",
+    "rbm": 108,
+    "city": "Mumbai-Thane",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 113,
+  "fields": {
+    "employee_id": "I4685",
+    "first_name": "Prathmesh",
+    "last_name": "Jadhav",
+    "email": "prathmesh@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T08:40:51.514Z",
+    "rbm": 193,
+    "city": "Sangli",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 114,
+  "fields": {
+    "employee_id": "I468R",
+    "first_name": "Rishikesh",
+    "last_name": "Sarsode",
+    "email": "rishikesh@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T04:53:54.037Z",
+    "rbm": 193,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 115,
+  "fields": {
+    "employee_id": "I4800",
+    "first_name": "Shubham",
+    "last_name": "Waghmare",
+    "email": "shubham@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-04T05:56:27.015Z",
+    "rbm": 202,
+    "city": "Nagpur 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 116,
+  "fields": {
+    "employee_id": "IGUW1",
+    "first_name": "SO",
+    "last_name": "VACANT GUWAHATI-1",
+    "email": "so1@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 117,
+  "fields": {
+    "employee_id": "I4795",
+    "first_name": "Durlabh",
+    "last_name": "Jyoti Bora",
+    "email": "durlabh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T06:15:08.303Z",
+    "rbm": 14,
+    "city": "Guwahati-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 118,
+  "fields": {
+    "employee_id": "I455N",
+    "first_name": "Nitesh",
+    "last_name": "Kumar Mishra",
+    "email": "nitesh@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-07T16:54:31.215Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 119,
+  "fields": {
+    "employee_id": "IPAT2",
+    "first_name": "SO",
+    "last_name": "VACANT PATNA 2",
+    "email": "so2@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 120,
+  "fields": {
+    "employee_id": "IMUZ1",
+    "first_name": "SO",
+    "last_name": "VACANT MUZAFFARPUR",
+    "email": "so3@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T15:05:01.910Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 121,
+  "fields": {
+    "employee_id": "I4641",
+    "first_name": "Rahul",
+    "last_name": "Kumar Singh",
+    "email": "rahul@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T03:22:32.802Z",
+    "rbm": 22,
+    "city": "Ranchi-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 122,
+  "fields": {
+    "employee_id": "I4638",
+    "first_name": "Anand",
+    "last_name": "Kumar Singh",
+    "email": "anand@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-29T11:50:47.809Z",
+    "rbm": 22,
+    "city": "Ranchi-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 123,
+  "fields": {
+    "employee_id": "I4640",
+    "first_name": "Robin",
+    "last_name": "Kumar Singh",
+    "email": "robin@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T03:23:00.883Z",
+    "rbm": 22,
+    "city": "Ranchi-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 124,
+  "fields": {
+    "employee_id": "ICUT1",
+    "first_name": "SO",
+    "last_name": "VACANT CUTTACK 1",
+    "email": "so4@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T11:46:53.080Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 125,
+  "fields": {
+    "employee_id": "ICUT2",
+    "first_name": "SO",
+    "last_name": "VACANT CUTTACK 2",
+    "email": "so5@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T11:48:12.205Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 126,
+  "fields": {
+    "employee_id": "I4793",
+    "first_name": "Arpan",
+    "last_name": "Abhishek Sahoo",
+    "email": "arpan@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T14:49:23.832Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 127,
+  "fields": {
+    "employee_id": "IBHU2",
+    "first_name": "SO",
+    "last_name": "VACANT BHUBANESWAR 2",
+    "email": "so6@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T14:49:53.871Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 128,
+  "fields": {
+    "employee_id": "I1575",
+    "first_name": "Santosh",
+    "last_name": "Kumar Mandal",
+    "email": "santosh@gmail.com",
+    "phone": "nan",
+    "department": "ZBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-19T05:41:43.061Z",
+    "rbm": null,
+    "city": "Bangalore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 129,
+  "fields": {
+    "employee_id": "I4576",
+    "first_name": "Sairam",
+    "last_name": "Goud Pagudala",
+    "email": "sairam@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T10:33:38.431Z",
+    "rbm": 140,
+    "city": "Hyderabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 130,
+  "fields": {
+    "employee_id": "I3836",
+    "first_name": "Askula",
+    "last_name": "Pavan Kalyan",
+    "email": "askula@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T07:27:22.059Z",
+    "rbm": 26,
+    "city": "Hyd-Kukatpally",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 131,
+  "fields": {
+    "employee_id": "IHYD3",
+    "first_name": "SO",
+    "last_name": "VACANT HYD-MEHDIPATNAM",
+    "email": "so7@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-06T07:09:49.144Z",
+    "rbm": 26,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 132,
+  "fields": {
+    "employee_id": "I2135",
+    "first_name": "Vanchangiri",
+    "last_name": "Hari Krishna",
+    "email": "vanchangiri@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T01:46:44.356Z",
+    "rbm": 26,
+    "city": "Warangal",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 133,
+  "fields": {
+    "employee_id": "I4347",
+    "first_name": "Kinnera",
+    "last_name": "Sunil Kumar",
+    "email": "kinnera@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T07:39:34.234Z",
+    "rbm": 36,
+    "city": "Vijayawada",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 134,
+  "fields": {
+    "employee_id": "I4132",
+    "first_name": "Yedururi",
+    "last_name": "Mahesh Babu",
+    "email": "yedururi@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-17T16:50:14.191Z",
+    "rbm": 36,
+    "city": "Guntur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 135,
+  "fields": {
+    "employee_id": "I4757",
+    "first_name": "Surya",
+    "last_name": "Santhosh Kumar",
+    "email": "surya@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T08:51:52.373Z",
+    "rbm": 36,
+    "city": "Kurnool",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 136,
+  "fields": {
+    "employee_id": "I4777",
+    "first_name": "Kanchana",
+    "last_name": "Venkata Prasad",
+    "email": "kanchana@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T02:58:14.070Z",
+    "rbm": 36,
+    "city": "Kadapa",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 137,
+  "fields": {
+    "employee_id": "IVIZ1",
+    "first_name": "SO",
+    "last_name": "VACANT VIZAG",
+    "email": "so8@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T09:12:49.303Z",
+    "rbm": 36,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 138,
+  "fields": {
+    "employee_id": "IKAK1",
+    "first_name": "SO",
+    "last_name": "VACANT KAKINADA",
+    "email": "so9@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T10:37:48.878Z",
+    "rbm": 36,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 139,
+  "fields": {
+    "employee_id": "IRAJ1",
+    "first_name": "SO",
+    "last_name": "VACANT RAJAHMUNDRY",
+    "email": "so10@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T02:58:27.662Z",
+    "rbm": 36,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 140,
+  "fields": {
+    "employee_id": "I1610",
+    "first_name": "Rudraswamy",
+    "last_name": "Y D",
+    "email": "rudraswamy@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-02T16:45:55.147Z",
+    "rbm": 140,
+    "city": "Bangalore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 141,
+  "fields": {
+    "employee_id": "I4114",
+    "first_name": "Prashantkumar",
+    "last_name": "Arunkumar Mishra",
+    "email": "prashantkumar@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T07:59:07.185Z",
+    "rbm": 140,
+    "city": "Bang-Jaya Nagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 142,
+  "fields": {
+    "employee_id": "I2786",
+    "first_name": "Subramanyam",
+    "last_name": "P M",
+    "email": "subramanyam@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T15:03:20.099Z",
+    "rbm": 140,
+    "city": "Bang-Shivajinagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 143,
+  "fields": {
+    "employee_id": "I2732",
+    "first_name": "Hanumantharaju",
+    "last_name": "S M",
+    "email": "hanumantharaju@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T03:37:12.927Z",
+    "rbm": 140,
+    "city": "Bang-Vijaynagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 144,
+  "fields": {
+    "employee_id": "I4407",
+    "first_name": "Mohammad",
+    "last_name": "Ayaz Kunnur",
+    "email": "mohammad@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-25T08:55:42.883Z",
+    "rbm": 140,
+    "city": "Hubli",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 145,
+  "fields": {
+    "employee_id": "I4397",
+    "first_name": "Mohammed",
+    "last_name": "Adnan Bombay",
+    "email": "mohammed@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Hubli",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 146,
+  "fields": {
+    "employee_id": "I4327",
+    "first_name": "Abhishek",
+    "last_name": "Ramesh Hundri",
+    "email": "abhishek@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T09:04:15.652Z",
+    "rbm": 140,
+    "city": "Belgaum",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 147,
+  "fields": {
+    "employee_id": "I4342",
+    "first_name": "Karthik",
+    "last_name": "J Shetty",
+    "email": "karthik@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T15:35:39.440Z",
+    "rbm": 140,
+    "city": "Mangalore",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 148,
+  "fields": {
+    "employee_id": "I4152",
+    "first_name": "Yogesh",
+    "last_name": "Yadav T D",
+    "email": "yogesh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-29T14:46:53.661Z",
+    "rbm": 140,
+    "city": "Shivamogga",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 149,
+  "fields": {
+    "employee_id": "I2067",
+    "first_name": "Suresh",
+    "last_name": "C V",
+    "email": "suresh@gmail.com",
+    "phone": "nan",
+    "department": "ZBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Chennai",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 150,
+  "fields": {
+    "employee_id": "I4759",
+    "first_name": "Harun",
+    "last_name": "Rasheed S",
+    "email": "harun@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-20T05:00:50.157Z",
+    "rbm": null,
+    "city": "Chennai",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 151,
+  "fields": {
+    "employee_id": "ICHE1",
+    "first_name": "SO",
+    "last_name": "VACANT CHENNAI-TAMBARAM",
+    "email": "so11@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 152,
+  "fields": {
+    "employee_id": "I4763",
+    "first_name": "Sandeep",
+    "last_name": "G N",
+    "email": "sandeep@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T16:26:45.674Z",
+    "rbm": 150,
+    "city": "Chennai-North",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 153,
+  "fields": {
+    "employee_id": "I4749",
+    "first_name": "Sankar",
+    "last_name": "S N",
+    "email": "sankar@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-08T09:38:37.163Z",
+    "rbm": 232,
+    "city": "Chennai-Pursaiwakkam",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 154,
+  "fields": {
+    "employee_id": "IVEL3",
+    "first_name": "SO",
+    "last_name": "VACANT CHENNAI-VELLORE",
+    "email": "so12@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 155,
+  "fields": {
+    "employee_id": "IMAD1",
+    "first_name": "RBM",
+    "last_name": "Vacant MADURAI",
+    "email": "rbm@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 156,
+  "fields": {
+    "employee_id": "I3932",
+    "first_name": "Arockia",
+    "last_name": "Amala Jeevan John",
+    "email": "arockia@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T10:34:12.751Z",
+    "rbm": 155,
+    "city": "Madurai",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 157,
+  "fields": {
+    "employee_id": "I3877",
+    "first_name": "Karthick",
+    "last_name": "Prem Kalidass",
+    "email": "karthick@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-16T06:20:58.545Z",
+    "rbm": 155,
+    "city": "Madurai-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 158,
+  "fields": {
+    "employee_id": "ITIR1",
+    "first_name": "SO",
+    "last_name": "VACANT TIRUNELVELI-1",
+    "email": "so13@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T16:32:25.994Z",
+    "rbm": 155,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 159,
+  "fields": {
+    "employee_id": "I4753",
+    "first_name": "Sreejith",
+    "last_name": "U N",
+    "email": "sreejith@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-11T13:53:23.214Z",
+    "rbm": 232,
+    "city": "Calicut",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 160,
+  "fields": {
+    "employee_id": "I4784",
+    "first_name": "Adarsh",
+    "last_name": "A T",
+    "email": "adarsh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T17:22:37.281Z",
+    "rbm": 232,
+    "city": "Calicut-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 161,
+  "fields": {
+    "employee_id": "IKAN3",
+    "first_name": "SO",
+    "last_name": "VACANT KANNUR",
+    "email": "so14@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-07T06:15:07.227Z",
+    "rbm": 232,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 162,
+  "fields": {
+    "employee_id": "I4530",
+    "first_name": "Arun",
+    "last_name": "C S",
+    "email": "arun@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Thrissur",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 163,
+  "fields": {
+    "employee_id": "I4647",
+    "first_name": "Vivek",
+    "last_name": "C S",
+    "email": "vivek@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T04:56:00.924Z",
+    "rbm": 232,
+    "city": "Thrissur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 164,
+  "fields": {
+    "employee_id": "I4243",
+    "first_name": "Muhammed",
+    "last_name": "Jaseem Ek",
+    "email": "muhammed@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T06:09:56.569Z",
+    "rbm": 232,
+    "city": "Perinthalmanna",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 165,
+  "fields": {
+    "employee_id": "I4728",
+    "first_name": "Rajesh",
+    "last_name": "Kumar V S",
+    "email": "rajesh@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-24T04:08:37.397Z",
+    "rbm": null,
+    "city": "Ernakulam",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 166,
+  "fields": {
+    "employee_id": "I4756",
+    "first_name": "Abhinand",
+    "last_name": "M S",
+    "email": "abhinand@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-08T18:48:16.361Z",
+    "rbm": 219,
+    "city": "Ernakulam-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 167,
+  "fields": {
+    "employee_id": "I475S",
+    "first_name": "Semeel",
+    "last_name": "E S",
+    "email": "semeel@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T16:55:51.228Z",
+    "rbm": 219,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 168,
+  "fields": {
+    "employee_id": "I475A",
+    "first_name": "Abhigith",
+    "last_name": "P Nair",
+    "email": "abhigith@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T08:56:24.286Z",
+    "rbm": 219,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 169,
+  "fields": {
+    "employee_id": "ITHI4",
+    "first_name": "SO",
+    "last_name": "VACANT THIRUVALLA",
+    "email": "so15@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-08T17:37:47.444Z",
+    "rbm": 219,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 170,
+  "fields": {
+    "employee_id": "I4648",
+    "first_name": "Vishnu",
+    "last_name": "Prasad M S",
+    "email": "vishnu@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T05:39:38.973Z",
+    "rbm": 219,
+    "city": "Trivandrum-1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 171,
+  "fields": {
+    "employee_id": "IKOL3",
+    "first_name": "SO",
+    "last_name": "VACANT KOLLAM",
+    "email": "so16@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T06:50:31.397Z",
+    "rbm": 219,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 172,
+  "fields": {
+    "employee_id": "I4253",
+    "first_name": "Vijay",
+    "last_name": "V Chandran",
+    "email": "vijay@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-19T01:41:46.465Z",
+    "rbm": 219,
+    "city": "Alleppey",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 173,
+  "fields": {
+    "employee_id": "I4535",
+    "first_name": "Vinod",
+    "last_name": "Kumar Verma",
+    "email": "vinod@gmail.com",
+    "phone": "nan",
+    "department": "ZBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-04T09:09:17.436Z",
+    "rbm": 80,
+    "city": "Delhi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 174,
+  "fields": {
+    "employee_id": "I4562",
+    "first_name": "Pravesh",
+    "last_name": "Kumar Nishad",
+    "email": "pravesh@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T08:10:57.445Z",
+    "rbm": 72,
+    "city": "North Delhi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 175,
+  "fields": {
+    "employee_id": "I4639",
+    "first_name": "Yadvendra",
+    "last_name": "Singh Chouhan",
+    "email": "yadvendra@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-21T04:11:32.562Z",
+    "rbm": 72,
+    "city": "Gurgaon",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 176,
+  "fields": {
+    "employee_id": "ICHA2",
+    "first_name": "SO",
+    "last_name": "VACANT CHANDIGARH-2",
+    "email": "so17@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 177,
+  "fields": {
+    "employee_id": "IJAM4",
+    "first_name": "SO",
+    "last_name": "VACANT JAMMU",
+    "email": "so18@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-20T04:20:08.041Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 178,
+  "fields": {
+    "employee_id": "I4778",
+    "first_name": "Pawan",
+    "last_name": "Kumar Yadav",
+    "email": "pawan@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T09:39:56.634Z",
+    "rbm": 89,
+    "city": "Jaipur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 179,
+  "fields": {
+    "employee_id": "I4682",
+    "first_name": "Mukesh",
+    "last_name": "Kumar Dangi",
+    "email": "mukesh@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T18:22:27.353Z",
+    "rbm": 89,
+    "city": "Kota",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 180,
+  "fields": {
+    "employee_id": "IBHO1",
+    "first_name": "SO",
+    "last_name": "VACANT BHOPAL",
+    "email": "so19@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 181,
+  "fields": {
+    "employee_id": "IIND3",
+    "first_name": "SO",
+    "last_name": "VACANT INDORE",
+    "email": "so20@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 182,
+  "fields": {
+    "employee_id": "IJAB4",
+    "first_name": "SO",
+    "last_name": "VACANT JABALPUR",
+    "email": "so21@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 183,
+  "fields": {
+    "employee_id": "I2918",
+    "first_name": "Derg",
+    "last_name": "Pal Singh",
+    "email": "derg@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T08:12:30.282Z",
+    "rbm": 183,
+    "city": "Ghaziabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 184,
+  "fields": {
+    "employee_id": "I4650",
+    "first_name": "Shiv",
+    "last_name": "Pratap Singh Kushwah",
+    "email": "shiv@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-23T11:27:14.139Z",
+    "rbm": null,
+    "city": "Meerut",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 185,
+  "fields": {
+    "employee_id": "I4698",
+    "first_name": "Anuj",
+    "last_name": "Singh Sisodia",
+    "email": "anuj@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T07:39:51.862Z",
+    "rbm": 183,
+    "city": "Agra",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 186,
+  "fields": {
+    "employee_id": "IMOR3",
+    "first_name": "SO",
+    "last_name": "VACANT MORADABAD",
+    "email": "so22@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T03:46:50.874Z",
+    "rbm": 183,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 187,
+  "fields": {
+    "employee_id": "I4534",
+    "first_name": "Shobhit",
+    "last_name": "Kumar Kesarwani",
+    "email": "shobhit@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Lucknow",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 188,
+  "fields": {
+    "employee_id": "I2106",
+    "first_name": "Ashish",
+    "last_name": "Kumar Mishra",
+    "email": "ashish@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T04:42:26.165Z",
+    "rbm": 187,
+    "city": "Varanasi",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 189,
+  "fields": {
+    "employee_id": "I4726",
+    "first_name": "Piyush",
+    "last_name": "Singh Bisen",
+    "email": "piyush@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T10:45:25.783Z",
+    "rbm": 108,
+    "city": "Mumbai-Western",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 190,
+  "fields": {
+    "employee_id": "I4631",
+    "first_name": "Sagar",
+    "last_name": "Babu Jadhav",
+    "email": "sagar@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-30T06:54:31.693Z",
+    "rbm": 108,
+    "city": "Mumbai -Bandra",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 191,
+  "fields": {
+    "employee_id": "I4721",
+    "first_name": "Prathamesh",
+    "last_name": "Siddheshwar Nagarase",
+    "email": "prathamesh@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T05:15:02.269Z",
+    "rbm": 108,
+    "city": "Mumbai-South",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 192,
+  "fields": {
+    "employee_id": "I4529",
+    "first_name": "Vishal",
+    "last_name": "Bapu Patil",
+    "email": "vishal@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T10:11:26.504Z",
+    "rbm": 108,
+    "city": "Mumbai -Kalyan",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 193,
+  "fields": {
+    "employee_id": "I4711",
+    "first_name": "Ritesh",
+    "last_name": "Dilip Wagh",
+    "email": "ritesh@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-07-01T13:14:58.612Z",
+    "rbm": 193,
+    "city": "Pune",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 194,
+  "fields": {
+    "employee_id": "I4674",
+    "first_name": "Deshmukh",
+    "last_name": "Ranjit Raghunath",
+    "email": "deshmukh@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T09:45:10.081Z",
+    "rbm": 211,
+    "city": "Pune",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 195,
+  "fields": {
+    "employee_id": "I3802",
+    "first_name": "Shafeek",
+    "last_name": "Mohammed Ashfak Mujawar",
+    "email": "shafeek@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T10:41:17.304Z",
+    "rbm": 193,
+    "city": "Pune",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 196,
+  "fields": {
+    "employee_id": "I4683",
+    "first_name": "Praik",
+    "last_name": "Pandurang Deshmukh",
+    "email": "praik@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T06:27:54.800Z",
+    "rbm": 193,
+    "city": "Pune-2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 197,
+  "fields": {
+    "employee_id": "I4681",
+    "first_name": "Katkar",
+    "last_name": "Ashish Vishwas",
+    "email": "katkar@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-08T06:23:16.178Z",
+    "rbm": 193,
+    "city": "Pcmc",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 198,
+  "fields": {
+    "employee_id": "I3735",
+    "first_name": "Pratik",
+    "last_name": "Rajan Pardeshi",
+    "email": "pratik@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T11:22:20.483Z",
+    "rbm": 193,
+    "city": "Satara",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 199,
+  "fields": {
+    "employee_id": "I4712",
+    "first_name": "Tulasidas",
+    "last_name": "S Kothawale",
+    "email": "tulasidas@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-23T08:52:28.826Z",
+    "rbm": 193,
+    "city": "Sangli",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 200,
+  "fields": {
+    "employee_id": "I3725",
+    "first_name": "Akshay",
+    "last_name": "Babaso Sawant",
+    "email": "akshay@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-16T06:09:28.832Z",
+    "rbm": 193,
+    "city": "Kolhapur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 201,
+  "fields": {
+    "employee_id": "I4680",
+    "first_name": "Sunil",
+    "last_name": "Bhagana Patil",
+    "email": "sunil@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T08:21:38.172Z",
+    "rbm": 193,
+    "city": "Goa",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 202,
+  "fields": {
+    "employee_id": "I4716",
+    "first_name": "Omprakash",
+    "last_name": "Satish Kene",
+    "email": "omprakash@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-16T12:00:21.048Z",
+    "rbm": null,
+    "city": "Nagpur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 203,
+  "fields": {
+    "employee_id": "I4644",
+    "first_name": "Vikas",
+    "last_name": "Ashok Sharma",
+    "email": "vikas@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T06:38:36.465Z",
+    "rbm": 202,
+    "city": "Nagpur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 204,
+  "fields": {
+    "employee_id": "I4684",
+    "first_name": "Pranay",
+    "last_name": "Prakash Warle",
+    "email": "pranay@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-20T11:32:56.531Z",
+    "rbm": null,
+    "city": "Nagpur 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 205,
+  "fields": {
+    "employee_id": "IRAI4",
+    "first_name": "SO",
+    "last_name": "VACANT RAIPUR",
+    "email": "so23@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 206,
+  "fields": {
+    "employee_id": "I4761",
+    "first_name": "Sayed",
+    "last_name": "Mujib Hasham Patel",
+    "email": "sayed@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T21:19:36.624Z",
+    "rbm": 202,
+    "city": "C S Nagar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 207,
+  "fields": {
+    "employee_id": "ICSN1",
+    "first_name": "SO",
+    "last_name": "VACANT C S NAGAR",
+    "email": "so24@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 208,
+  "fields": {
+    "employee_id": "I4786",
+    "first_name": "Nilaesh",
+    "last_name": "Rajendra Bachchhav",
+    "email": "nilaesh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-24T06:33:55.804Z",
+    "rbm": null,
+    "city": "Nashik",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 209,
+  "fields": {
+    "employee_id": "I3747",
+    "first_name": "Shaikh",
+    "last_name": "Saifuddin Shaikh Kaleemuddin",
+    "email": "shaikh@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-16T07:32:58.038Z",
+    "rbm": 202,
+    "city": "Nanded",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 210,
+  "fields": {
+    "employee_id": "I4058",
+    "first_name": "Manoj",
+    "last_name": "Prabhakar Bandewar",
+    "email": "manoj@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T11:05:19.803Z",
+    "rbm": 202,
+    "city": "Latur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 211,
+  "fields": {
+    "employee_id": "I1436",
+    "first_name": "Rohit",
+    "last_name": "Ramani Rameshbhai",
+    "email": "rohit@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-27T06:57:34.942Z",
+    "rbm": 211,
+    "city": "Ahmedabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 212,
+  "fields": {
+    "employee_id": "I2523",
+    "first_name": "Modi",
+    "last_name": "Parth Sanjaykumar",
+    "email": "modi@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T08:18:15.850Z",
+    "rbm": 211,
+    "city": "Ahmedabad",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 213,
+  "fields": {
+    "employee_id": "I4676",
+    "first_name": "Dobariya",
+    "last_name": "Akshaybhai Arvindbhai",
+    "email": "dobariya@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T09:58:33.586Z",
+    "rbm": 211,
+    "city": "Ahmedabad 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 214,
+  "fields": {
+    "employee_id": "I4669",
+    "first_name": "Koyani",
+    "last_name": "Malay Mansukhbhai",
+    "email": "koyani@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T03:29:33.928Z",
+    "rbm": 211,
+    "city": "Ahmedabad 2",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 215,
+  "fields": {
+    "employee_id": "I4675",
+    "first_name": "Kothiya",
+    "last_name": "Meet Ashokbhai",
+    "email": "kothiya@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-27T13:26:11.856Z",
+    "rbm": 211,
+    "city": "Ahmedabad 3",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 216,
+  "fields": {
+    "employee_id": "I4797",
+    "first_name": "Ukani",
+    "last_name": "Parth Ghanshyambhai",
+    "email": "ukani@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-07T10:00:07.691Z",
+    "rbm": 211,
+    "city": "Surat",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 217,
+  "fields": {
+    "employee_id": "I4671",
+    "first_name": "Harshit",
+    "last_name": "Ishvarlal Upadhyay",
+    "email": "harshit@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-12T17:29:07.598Z",
+    "rbm": 211,
+    "city": "Vadodara",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 218,
+  "fields": {
+    "employee_id": "I4691",
+    "first_name": "Kanpariya",
+    "last_name": "Shubham Rameshbhai",
+    "email": "kanpariya@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T13:16:43.046Z",
+    "rbm": 211,
+    "city": "Rajkot",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 219,
+  "fields": {
+    "employee_id": "I4760",
+    "first_name": "Ajith",
+    "last_name": "Mohan",
+    "email": "ajithm@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-06T13:38:40.123Z",
+    "rbm": 22,
+    "city": "Ernakulam",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 220,
+  "fields": {
+    "employee_id": "I4636",
+    "first_name": "Amit",
+    "last_name": "nan",
+    "email": "amit1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T04:22:39.739Z",
+    "rbm": 72,
+    "city": "West Delhi 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 221,
+  "fields": {
+    "employee_id": "I4633",
+    "first_name": "Gautam",
+    "last_name": "nan",
+    "email": "gautam1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-14T07:45:24.434Z",
+    "rbm": 72,
+    "city": "East Delhi 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 222,
+  "fields": {
+    "employee_id": "I4634",
+    "first_name": "Ravi",
+    "last_name": "Tomar",
+    "email": "ravi1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-20T10:00:54.497Z",
+    "rbm": null,
+    "city": "South Delhi 1",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 223,
+  "fields": {
+    "employee_id": "I4710",
+    "first_name": "Sahil",
+    "last_name": "Kumar",
+    "email": "sahil1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-06T14:08:44.737Z",
+    "rbm": 72,
+    "city": "Hissar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 224,
+  "fields": {
+    "employee_id": "I4788",
+    "first_name": "Rahul",
+    "last_name": "nan",
+    "email": "rahul1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T10:38:01.088Z",
+    "rbm": 80,
+    "city": "Jalandhar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 225,
+  "fields": {
+    "employee_id": "I4303",
+    "first_name": "Deepak",
+    "last_name": "Savita",
+    "email": "deepak1@gmail.com",
+    "phone": "nan",
+    "department": "SO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-16T16:11:33.689Z",
+    "rbm": null,
+    "city": "Gwalior",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 226,
+  "fields": {
+    "employee_id": "I4635",
+    "first_name": "Ankur",
+    "last_name": "Kumar",
+    "email": "ankur1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-11T08:23:17.467Z",
+    "rbm": 183,
+    "city": "Dehradun",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 227,
+  "fields": {
+    "employee_id": "I2285",
+    "first_name": "Subham",
+    "last_name": "Pandey",
+    "email": "subham1@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Lucknow",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 228,
+  "fields": {
+    "employee_id": "I4707",
+    "first_name": "Suraj",
+    "last_name": "Khairwar",
+    "email": "suraj1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-18T00:42:01.891Z",
+    "rbm": 108,
+    "city": "Mumbai -Borivali",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 229,
+  "fields": {
+    "employee_id": "I463S",
+    "first_name": "Sanjay",
+    "last_name": "Kumar Mahato",
+    "email": "sanjay1@gmail.com",
+    "phone": "nan",
+    "department": "nan",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-13T02:43:06.265Z",
+    "rbm": 22,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 230,
+  "fields": {
+    "employee_id": "I4577",
+    "first_name": "Abhijeet",
+    "last_name": "Dhanajirao Dawargave",
+    "email": "abhijeet1@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-20T02:31:05.222Z",
+    "rbm": 140,
+    "city": "Gulbarga",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 231,
+  "fields": {
+    "employee_id": "I0583",
+    "first_name": "G",
+    "last_name": "K Vinaykumar",
+    "email": "g1@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Mangalore",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 232,
+  "fields": {
+    "employee_id": "I0096",
+    "first_name": "M",
+    "last_name": "R Nikhil",
+    "email": "m1@gmail.com",
+    "phone": "nan",
+    "department": "RBM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-29T05:17:21.528Z",
+    "rbm": 232,
+    "city": "Calicut",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 233,
+  "fields": {
+    "employee_id": "I3884",
+    "first_name": "Siva",
+    "last_name": "Krishna R S",
+    "email": "siva1@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-06-30T15:19:36.294Z",
+    "rbm": 219,
+    "city": "Trivandrum",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 234,
+  "fields": {
+    "employee_id": "I4645",
+    "first_name": "Deepak",
+    "last_name": "Kumar Chhipa",
+    "email": "deepak2@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-15T01:25:33.580Z",
+    "rbm": 89,
+    "city": "Jaipur",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 235,
+  "fields": {
+    "employee_id": "I4538",
+    "first_name": "Suresh",
+    "last_name": "Datta Mote",
+    "email": "suresh2@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-08-15T15:29:40.263Z",
+    "rbm": 108,
+    "city": "Mumbai -Dadar",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 236,
+  "fields": {
+    "employee_id": "I4697",
+    "first_name": "Yogesh",
+    "last_name": "Sanjay Rathod",
+    "email": "yogesh2@gmail.com",
+    "phone": "nan",
+    "department": "TSO",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-09-04T05:33:11.939Z",
+    "rbm": 202,
+    "city": "Amaravati",
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 237,
+  "fields": {
+    "employee_id": "I3469",
+    "first_name": "Dobariya",
+    "last_name": "Vishal Vinubhai",
+    "email": "dobariya1@gmail.com",
+    "phone": "nan",
+    "department": "BM",
+    "date_joined": "2025-05-11",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": "Surat",
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 238,
+  "fields": {
+    "employee_id": "EMP00125",
+    "first_name": "Bidyut",
+    "last_name": "Nag",
+    "email": "test.doe@example.com",
+    "phone": "9876543210",
+    "department": "nan",
+    "date_joined": "2025-05-12",
+    "user_type": "Admin",
+    "status": true,
+    "login_date": "2025-08-06T17:34:34.521Z",
+    "rbm": 1,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 239,
+  "fields": {
+    "employee_id": "EMP00192",
+    "first_name": "Pankti",
+    "last_name": "test",
+    "email": "pankti@gmail.com",
+    "phone": "9837718821",
+    "department": "general",
+    "date_joined": "2025-05-12",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 240,
+  "fields": {
+    "employee_id": "EMP00889",
+    "first_name": "teest",
+    "last_name": "test",
+    "email": "test@gmail.com",
+    "phone": "9136165912",
+    "department": "general",
+    "date_joined": "2025-05-12",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 241,
+  "fields": {
+    "employee_id": "None",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@email.com",
+    "phone": "9876543210",
+    "department": "Sales",
+    "date_joined": "2025-05-12",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-15T13:35:02.519Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": false
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 242,
+  "fields": {
+    "employee_id": "Admin0001",
+    "first_name": "Arun",
+    "last_name": "Wadhwa",
+    "email": "arun.wadhwa@envisageideas.com",
+    "phone": null,
+    "department": null,
+    "date_joined": "2025-05-13",
+    "user_type": "Admin",
+    "status": true,
+    "login_date": "2025-08-20T12:48:37.250Z",
+    "rbm": 1,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 243,
+  "fields": {
+    "employee_id": "Admin0002",
+    "first_name": "Admin",
+    "last_name": "",
+    "email": "admin@gmail.com",
+    "phone": null,
+    "department": null,
+    "date_joined": "2025-05-13",
+    "user_type": "Admin",
+    "status": true,
+    "login_date": "2025-08-18T07:37:46.471Z",
+    "rbm": 1,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 244,
+  "fields": {
+    "employee_id": "EMP001000",
+    "first_name": "Nikhil",
+    "last_name": "jha",
+    "email": "jhatest123@gmail.com",
+    "phone": "9132819239",
+    "department": "Finance",
+    "date_joined": "2025-05-13",
+    "user_type": "Employee",
+    "status": true,
+    "login_date": "2025-05-29T08:51:35.185Z",
+    "rbm": 1,
+    "city": null,
+    "has_logged_in": true
+  }
+},
+{
+  "model": "employee_app.employee",
+  "pk": 245,
+  "fields": {
+    "employee_id": "EMP9321",
+    "first_name": "Sam",
+    "last_name": "Bahadur",
+    "email": "abc@gmail.com",
+    "phone": "9136165912",
+    "department": "general",
+    "date_joined": "2025-05-17",
+    "user_type": "Admin",
+    "status": true,
+    "login_date": "2025-05-17T16:58:20.270Z",
+    "rbm": null,
+    "city": null,
+    "has_logged_in": true
+  }
+}
+]

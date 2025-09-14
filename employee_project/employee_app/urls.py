@@ -2,14 +2,14 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 
-from .views import VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,RegenerateContentView,DoctorUpdateDeleteView,BrandListAPIView,ImageTemplateUsageView
+from .views import VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,RegenerateContentView,DoctorUpdateDeleteView,BrandListAPIView,ImageTemplateUsageView,TaskStatusView,HealthCheckView,system_metrics
 
-
+from django.http import JsonResponse
 from rest_framework_simplejwt.views import ( # type: ignore
     TokenObtainPairView,
     TokenRefreshView,
 )
-
+from .test_simple_server import simple_login
 
 
 router = DefaultRouter()
@@ -18,9 +18,13 @@ router.register(r'employees', EmployeeViewSet, basename='employee')
 router.register(r'doctors', DoctorVideoViewSet, basename='doctorvideos')
 
 
+def test_cors(request):
+    return JsonResponse({"status": "working"})
 
 urlpatterns = [
-
+    path('test-cors/', test_cors, name='test_cors'),
+    path('simple-login', simple_login, name='simple_login'),
+    path('test', test_cors, name='test_cors'),  # Add this line
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
@@ -29,7 +33,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/bulk-upload-employees/', bulk_upload_employees, name='bulk_upload_employees'),
     path('api/bulk-upload-doctors/', bulk_upload_doctors, name='bulk_upload_doctor_videos'),
-    path('api/by-employee/doctors/', DoctorListByEmployee.as_view(), name='doctors-by-employee'),
+    # path('api/by-employee/doctors/', DoctorListByEmployee.as_view(), name='doctors-by-employee'),
     path('api/by-employee/doctors-video/', DoctorVideoListView.as_view(), name='doctors_video-by-employee'),
     path('api/retry-video/doctors-video/', DoctorVideoGeneration.as_view(), name='doctors_video-by-doctor-id'),
     path('api/export-doctor-videos/', DoctorVideoExportExcelView.as_view(), name='export-doctor-videos'),
@@ -60,7 +64,7 @@ urlpatterns = [
 
     #! NEW
 
-    path('api/doctors/<int:doctor_id>/', DoctorUpdateDeleteView.as_view(), name='doctor-update-delete'),
+    path('api/doctor/<int:doctor_id>/', DoctorUpdateDeleteView.as_view(), name='doctor-update-delete'),
     
     # CONTENT REGENERATION
     path('api/regenerate-content/', RegenerateContentView.as_view(), name='regenerate-content'),
@@ -71,5 +75,10 @@ urlpatterns = [
     path('api/brands/', BrandListAPIView.as_view(), name='brand-list'),
 
     path('api/image-template-usage/', ImageTemplateUsageView.as_view(), name='image-template-usage'),
+    path('api/task-status/<str:task_id>/', TaskStatusView.as_view(), name='task_status'),
+    path('api/health/', HealthCheckView.as_view(), name='health_check'),
+    path('api/system-metrics/', system_metrics, name='system_metrics'),
+    # In your urls.py
+    path('api/doctors-by-employee/', DoctorListByEmployee.as_view(), name='doctors-by-employee'),
 
 ]

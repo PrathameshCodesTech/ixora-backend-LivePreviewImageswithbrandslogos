@@ -95,7 +95,7 @@ class DoctorVideoSerializer(serializers.ModelSerializer):
         ]
 
     def get_latest_output_video(self, obj):
-        videos = DoctorOutputVideo.objects.filter(doctor=obj).order_by('-id')
+        videos = obj.doctor_videos.all().order_by('-id')
         return DoctorOutputVideoSerializer(videos, many=True).data
 
     def get_latest_output_image(self, obj):  # ADD THIS METHOD
