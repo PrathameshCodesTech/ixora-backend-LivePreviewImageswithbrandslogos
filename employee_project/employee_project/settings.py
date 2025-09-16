@@ -13,8 +13,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import logging
+import multiprocessing
+from dotenv import load_dotenv
 
+load_dotenv()
 logger = logging.getLogger(__name__)
+
 # Environment detection
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 IS_PRODUCTION = ENVIRONMENT == 'production'
@@ -22,30 +26,11 @@ IS_PRODUCTION = ENVIRONMENT == 'production'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-APPEND_SLASH = False  
-
-ALLOWED_HOSTS = ["*"]
-
-from pathlib import Path
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Security - Force DEBUG to True for development
+# Security Settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
-DEBUG = True  # Override environment variable
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+DEBUG = True
+APPEND_SLASH = False
+ALLOWED_HOSTS = ["*"]
 
 # Database
 DATABASES = {
@@ -68,15 +53,14 @@ DATABASES = {
     }
 }
 
-# Database connection pooling (add this after DATABASES)
+# Database connection pooling for production
 if not DEBUG:
     DATABASES['default']['OPTIONS'].update({
-        'MAX_CONNS': 100,  # Production connection pool
+        'MAX_CONNS': 100,
         'MIN_CONNS': 10,
     })
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -84,20 +68,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',  # MOVED HERE - MUST BE AFTER django apps
+    'corsheaders',
     'employee_app',
     'rest_framework',
     'django.contrib.sites',
     'rest_framework_simplejwt',
-    'django_celery_beat',  
+    'django_celery_beat',
+    'django_redis',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # MOVED HERE - MUST BE BEFORE CommonMiddleware
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Keep disabled for API
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -123,84 +107,36 @@ TEMPLATES = [
 WSGI_APPLICATION = 'employee_project.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#         'OPTIONS': {
-#             'timeout': 30,
-#             'check_same_thread': False,  # Allow multiple threads
-#         },
-#         'CONN_MAX_AGE': 600,  # Keep connections alive
-#     }
-# }
-
-
-# Cache Configuration
-
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#         'LOCATION': 'unique-snowflake',
-#         'TIMEOUT': 300,
-#     }
-# }
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'CONNECTION_POOL_KWARGS': {
-                'max_connections': 20,
-                'retry_on_timeout': True,
-                'socket_timeout': 5,
-                'socket_connect_timeout': 5,
-            },
-        },
-        'TIMEOUT': 300,
-        'KEY_PREFIX': 'employee_app',
-        'VERSION': 1,
-    }
-}
-TIME_ZONE = "Asia/Kolkata" 
 
 # Celery Configuration
-# Celery Configuration - Production Ready
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
+CELERY_TIMEZONE = 'Asia/Kolkata'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-USE_TZ = True
 
 # Production-ready task settings
-CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
-CELERY_TASK_TIME_LIMIT = 600  # 10 minutes max for image tasks
-CELERY_TASK_SOFT_TIME_LIMIT = 480  # 8 minutes soft limit for images
-CELERY_WORKER_MAX_MEMORY_PER_CHILD = 150000  # 150MB per worker (reduced)
+CELERY_RESULT_EXPIRES = 3600
+CELERY_TASK_TIME_LIMIT = 600
+CELERY_TASK_SOFT_TIME_LIMIT = 480
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 150000
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
 # Concurrency settings
-import multiprocessing
-CELERY_WORKER_CONCURRENCY = min(multiprocessing.cpu_count() * 2, 8)  # Max 8 workers
+CELERY_WORKER_CONCURRENCY = min(multiprocessing.cpu_count() * 2, 8)
 
-# Task routing for better performance
+# Task routing
 CELERY_TASK_ROUTES = {
     'employee_app.tasks.generate_image_async': {'queue': 'image_generation'},
     'employee_app.tasks.generate_custom_video_task': {'queue': 'video_generation'},
 }
 
 # Queue configuration
-CELERY_TASK_DEFAULT_QUEUE = 'default'
+CELERY_TASK_DEFAULT_QUEUE = 'image_generation'
 CELERY_TASK_QUEUES = {
     'default': {'exchange': 'default', 'routing_key': 'default'},
     'image_generation': {'exchange': 'image_generation', 'routing_key': 'image_generation'},
@@ -208,20 +144,15 @@ CELERY_TASK_QUEUES = {
 }
 
 # Retry configuration
-CELERY_TASK_RETRY_DELAY = 60  # 1 minute between retries
-CELERY_TASK_MAX_RETRIES = 2   # Reduced retries for faster failure detection
+CELERY_TASK_RETRY_DELAY = 60
+CELERY_TASK_MAX_RETRIES = 2
 
 # Monitoring and health checks
 CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_TASK_SEND_SENT_EVENT = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 
-
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -237,20 +168,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
-# TIME_ZONE = 'UTC'
 TIME_ZONE = 'Asia/Kolkata'
-
 USE_I18N = True
-
 USE_TZ = True
-# CORS Configuration - FIXED VERSION
-CORS_ALLOW_ALL_ORIGINS = True  # This is the key fix
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -266,6 +191,8 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'cache-control',
+    'pragma',
 ]
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -276,43 +203,10 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static files
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'emp_db',
-#         'USER': 'root',
-#         'PASSWORD': 'Tech_100',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'emp_db',         # Replace with your actual DB name
-#         #'USER': 'postgres',       # Replace with your PostgreSQL username
-#         # 'PASSWORD': 'root',  # Replace with your PostgreSQL password
-#         'USER': 'konstruct_user',
-#         'PASSWORD': 'kn1@5&wt#',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
-import os
-
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -321,37 +215,12 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SITE_ID = 1
 
-
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-    'cache-control',
-    'pragma',
-]
-
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-]
-
-
-
-# CORS settings for development
-
-
+# REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -361,19 +230,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    # 'DEFAULT_THROTTLE_CLASSES': [
-    #     'rest_framework.throttling.AnonRateThrottle',
-    #     'rest_framework.throttling.UserRateThrottle'
-    # ],
-    # 'DEFAULT_THROTTLE_RATES': {
-    #     'anon': '50/hour',
-    #     'user': '500/hour',
-    #     'burst': '30/min',
-    #     'sustained': '500/day',
-    #     'media_generation': '5/hour'  # Reduced for production stability
-    # }
 }
-
 
 # Logging Configuration
 LOGGING = {
@@ -389,9 +246,9 @@ LOGGING = {
             'style': '{',
         },
         'json': {
-    'format': '{{"level": "{levelname}", "time": "{asctime}", "module": "{module}", "message": "{message}"}}',
-    'style': '{',
-},
+            'format': '{{"level": "{levelname}", "time": "{asctime}", "module": "{module}", "message": "{message}"}}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file': {
@@ -438,19 +295,6 @@ LOGGING = {
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOGS_DIR, exist_ok=True)
 
-
-
-
-
-
-# For development - allow unauthenticated access to some endpoints
-if DEBUG:
-    REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'] = [
-        'rest_framework.permissions.AllowAny',
-    ]
-
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
-
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -463,26 +307,11 @@ CSRF_COOKIE_SECURE = not DEBUG
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
-
 # Resource limits for production
 if IS_PRODUCTION:
-    # Reduce memory usage in production
     REST_FRAMEWORK['PAGE_SIZE'] = 20
-    
-    # File processing limits
     MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
     MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
-    
-    # Task queue limits
     CELERY_WORKER_CONCURRENCY = 2  # Limit concurrent workers
-    
-    # Database query timeout
     DATABASES['default']['OPTIONS']['connect_timeout'] = 5
 
-# Redis connection validation
-try:
-    import redis
-    r = redis.Redis(host='localhost', port=6379, db=0)
-    r.ping()
-except Exception as e:
-    logger.warning(f"Redis connection failed: {e}")

@@ -7,10 +7,6 @@ import logging
 import subprocess
 from datetime import datetime, date, timedelta
 import mimetypes
-from django.core.cache import cache
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_headers
 from django.core.files.storage import default_storage
 from django.core.exceptions import ValidationError
 
@@ -36,11 +32,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_ratelimit.decorators import ratelimit
-
+from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 import psutil
 import threading
-import time  # ADD THIS MISSING IMPORT
+import time  
 from django.db import models
 from django.core.cache import cache
 
@@ -138,16 +134,7 @@ class HealthCheckView(APIView):
             overall_status = False
         
         # Cache check
-        try:
-            cache.set("health_check", "ok", 10)
-            if cache.get("health_check") == "ok":
-                health_data["checks"]["cache"] = {"status": "ok"}
-            else:
-                health_data["checks"]["cache"] = {"status": "error", "message": "Cache not responding"}
-                overall_status = False
-        except Exception as e:
-            health_data["checks"]["cache"] = {"status": "error", "message": str(e)}
-            overall_status = False
+        health_data["checks"]["cache"] = {"status": "disabled", "message": "Cache not in use"}
         
         # Celery check
         try:
@@ -198,6 +185,7 @@ except Exception:
 # Logging
 # ------------------------------------------------------------------------------
 logger = logging.getLogger(__name__)
+
 
 # Security Configuration
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -329,6 +317,8 @@ def system_metrics(request):
         
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+
 
 
 # Add process monitoring
@@ -811,56 +801,38 @@ class VideoGenViewSet(viewsets.ModelViewSet):
 class DoctorVideoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DoctorVideoSerializer
     pagination_class = Pagination_class
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Get user info from query parameters
         employee_id = self.request.query_params.get('employee_id')
         user_type = self.request.query_params.get('user_type')
         search = self.request.query_params.get('search', '')
         specialization = self.request.query_params.get('specialization', '')
         
-        base_queryset = DoctorVideo.objects.select_related(
-            'employee', 
-            'employee__rbm'
-        ).prefetch_related(
-            'doctor_videos__template',
-            'image_contents__template'
-        ).annotate(
-            latest_content_date=models.Max(
-                models.Case(
-                    models.When(doctor_videos__isnull=False, then='doctor_videos__created_at'),
-                    models.When(image_contents__isnull=False, then='image_contents__created_at'),
-                    default='created_at'
-                )
-            )
-        )
-        
-        # Apply role-based filtering
-        if user_type == "Admin" or user_type == "SuperAdmin":
-            # Admins see all doctors
-            queryset = base_queryset.order_by('-latest_content_date', '-created_at')
-        else:
-            # Regular employees see only their own doctors
-            if not employee_id:
-                return base_queryset.none()
+        if not employee_id:
+            return DoctorVideo.objects.none()
             
+        # Optimized for image-heavy queries
+        if user_type in ["Admin", "SuperAdmin"]:
+            doctors = DoctorVideo.objects.select_related('employee').prefetch_related('image_contents__template')
+        else:
             try:
                 employee = Employee.objects.get(employee_id=employee_id)
-                queryset = base_queryset.filter(employee=employee).order_by('-latest_content_date', '-created_at')
+                doctors = DoctorVideo.objects.filter(employee=employee).select_related('employee').prefetch_related('image_contents__template')
             except Employee.DoesNotExist:
-                return base_queryset.none()
+                return DoctorVideo.objects.none()
         
-        # Apply search filters
+        # Apply filters
         if search:
-            queryset = queryset.filter(
+            doctors = doctors.filter(
                 Q(name__icontains=search) | 
                 Q(clinic__icontains=search) |
                 Q(mobile_number__icontains=search)
             )
         if specialization:
-            queryset = queryset.filter(specialization__iexact=specialization)
+            doctors = doctors.filter(specialization__iexact=specialization)
             
-        return queryset
+        return doctors.order_by('-created_at')
     
 
 
@@ -928,12 +900,9 @@ def bulk_upload_employees(request):
 
 
 class DoctorListByEmployee(APIView):
-    permission_classes = [AllowAny]  # Keep flexible but add validation
+    permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        print(f"DEBUG: Request received for employee_id: {request.GET.get('employee_id')}")
-        print(f"DEBUG: Request headers: {request.headers}")
-        
         employee_id = request.GET.get('employee_id')
         user_type = request.GET.get('user_type')
         search = request.GET.get('search', '')
@@ -945,25 +914,13 @@ class DoctorListByEmployee(APIView):
         try:
             employee = Employee.objects.get(employee_id=employee_id)
         except Employee.DoesNotExist:
-            return Response({"detail": "Employee not found for this employee_id."}, status=404)
+            return Response({"detail": "Employee not found."}, status=404)
             
-        # Role-based queryset filtering
-        base_queryset = DoctorVideo.objects.select_related('employee').annotate(
-            latest_content_date=models.Max(
-                models.Case(
-                    models.When(doctor_videos__isnull=False, then='doctor_videos__created_at'),
-                    models.When(image_contents__isnull=False, then='image_contents__created_at'),
-                    default='created_at'
-                )
-            )
-        )
-        
-        if user_type == "Admin" or user_type == "SuperAdmin":
-            # Admin sees all doctors
-            doctors = base_queryset.order_by('-latest_content_date', '-created_at')
+        # Simple query - database handles concurrency
+        if user_type in ["Admin", "SuperAdmin"]:
+            doctors = DoctorVideo.objects.all()
         else:
-            # Regular employee sees only their own doctors
-            doctors = base_queryset.filter(employee=employee).order_by('-latest_content_date', '-created_at')
+            doctors = DoctorVideo.objects.filter(employee=employee)
         
         # Apply search filters
         if search:
@@ -974,10 +931,12 @@ class DoctorListByEmployee(APIView):
         if specialization:
             doctors = doctors.filter(specialization__iexact=specialization)
             
+        doctors = doctors.order_by('-created_at')
         paginator = Pagination_class()
         page = paginator.paginate_queryset(doctors, request)
-        serializer = DoctorVideoSerializer(page, many=True)  # Use DoctorVideoSerializer, not DoctorSerializer
+        serializer = DoctorVideoSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
 
 class DoctorVideoListView(APIView):
     def get(self, request):
@@ -1295,11 +1254,11 @@ class VideoTemplateAPIView(APIView):
             serializer = VideoTemplatesSerializer(template)
         else:
             status_param = request.query_params.get('status')
-            template_type = request.query_params.get('template_type', 'video')  # <- NEW
+            template_type = request.query_params.get('template_type', 'image') # <- NEW
             user_type = request.query_params.get('user_type')
             employee_id = request.query_params.get('employee_id')
 
-            templates = VideoTemplates.objects.filter(template_type=template_type)  # <- NEW
+            templates = VideoTemplates.objects.filter(template_type='image')# <- NEW
 
             # Apply user-based filtering
             if user_type and user_type not in ["Admin", "SuperAdmin"]:
@@ -1715,6 +1674,7 @@ class ImageTemplateAPIView(APIView):
         return Response({"detail": "Template deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 # @method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
+
 class GenerateImageContentView(APIView):
     """Generate image with text overlay - DoctorVideo only"""
     # throttle_classes = [MediaGenerationThrottle, BurstRateThrottle]
@@ -2423,7 +2383,7 @@ class ImageContentListView(APIView):
         serializer = ImageContentSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
-@method_decorator(ratelimit(key='ip', rate='30/m', method='GET', block=True), name='get')
+
 class DoctorSearchView(APIView):
     """Search doctor by mobile number or name"""
     def get(self, request):
@@ -2739,7 +2699,7 @@ class BrandListAPIView(generics.ListAPIView):
 class ImageTemplateUsageView(APIView):
     # throttle_classes = [BurstRateThrottle]
     
-    @method_decorator(cache_page(300))  # Cache for 5 minutes
+    
     def get(self, request):
         # Optimized single query with aggregation
         template_data = ImageContent.objects.select_related('template', 'doctor').values(
