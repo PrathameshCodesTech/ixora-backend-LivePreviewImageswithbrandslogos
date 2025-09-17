@@ -2,7 +2,9 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 
-from .views import VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,RegenerateContentView,DoctorUpdateDeleteView,BrandListAPIView,ImageTemplateUsageView,TaskStatusView,HealthCheckView,system_metrics
+from .views import ( VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,DoctorUpdateDeleteView,BrandListAPIView,ImageTemplateUsageView,TaskStatusView,HealthCheckView,system_metrics,
+DoctorUsageHistoryView,SharedDoctorsView
+)
 
 from django.http import JsonResponse
 from rest_framework_simplejwt.views import ( # type: ignore
@@ -67,7 +69,7 @@ urlpatterns = [
     path('api/doctor/<int:doctor_id>/', DoctorUpdateDeleteView.as_view(), name='doctor-update-delete'),
     
     # CONTENT REGENERATION
-    path('api/regenerate-content/', RegenerateContentView.as_view(), name='regenerate-content'),
+    # path('api/regenerate-content/', RegenerateContentView.as_view(), name='regenerate-content'),
     
     # CONTENT DELETION
     path('api/delete-content/<str:content_type>/<int:content_id>/', DeleteContentView.as_view(), name='delete-content'),
@@ -81,4 +83,7 @@ urlpatterns = [
     # In your urls.py
     path('api/doctors-by-employee/', DoctorListByEmployee.as_view(), name='doctors-by-employee'),
 
+    # Add these new URL patterns
+    path('api/doctor-usage-history/', DoctorUsageHistoryView.as_view(), name='doctor-usage-history'),
+    path('api/shared-doctors/', SharedDoctorsView.as_view(), name='shared-doctors'),
 ]

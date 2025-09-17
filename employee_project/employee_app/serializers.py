@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Doctor,Employee,DoctorVideo,VideoTemplates,DoctorOutputVideo,ImageContent,Brand
+from .models import Employee,DoctorVideo,VideoTemplates,ImageContent,Brand
+
 
 
 class EmployeeLoginSerializer(serializers.Serializer):
@@ -28,57 +29,11 @@ class DoctorSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'designation', 'clinic', 'city', 'state', 'image', 'specialization', 'mobile_number', 'whatsapp_number', 'description', 'output_video', 'employee']
 
 
-class DoctorOutputVideoSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = DoctorOutputVideo
-        fields = '__all__'
-
-
-# class DoctorVideoSerializer(serializers.ModelSerializer):
-    # image = serializers.ImageField(required=False, allow_null=True)
-    # latest_output_video = serializers.SerializerMethodField()
-    # employee_name = serializers.SerializerMethodField()
-    # rbm_name = serializers.SerializerMethodField()
-    #! commentend previosly 
-    # employee_designation = serializers.SerializerMethodField()  # ✅ New field
-
-    # class Meta:
-    #     model = DoctorVideo
-    #     fields = [
-    #         'id', 'name', 'designation', 'clinic', 'city', 'state',
-    #         'image', 'specialization', 'specialization_key',
-    #         'mobile_number', 'whatsapp_number', 'description',
-    #         'output_video', 'created_at', 'employee',
-    #         'latest_output_video', 'employee_name', 'rbm_name',
-            
-    #     ]
-
-    # def get_latest_output_video(self, obj):
-    #     videos = DoctorOutputVideo.objects.filter(doctor=obj).order_by('-id')
-    #     return DoctorOutputVideoSerializer(videos, many=True).data
-
-    # def get_employee_name(self, obj):
-    #     if obj.employee:
-    #         return f"{obj.employee.first_name} {obj.employee.last_name}".strip()
-    #     return None
-
-    # def get_rbm_name(self, obj):
-    #     if obj.employee and obj.employee.rbm:
-    #         return f"{obj.employee.rbm.first_name} {obj.employee.rbm.last_name}".strip()
-    #     return None
-
-
-    #! commented previously
-    # def get_employee_designation(self, obj):
-    #     if obj.employee and obj.employee.designation:
-    #         return obj.employee.designation
-    #     return None
 
 
 class DoctorVideoSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, allow_null=True)
-    latest_output_video = serializers.SerializerMethodField()
+    # latest_output_video = serializers.SerializerMethodField()
     latest_output_image = serializers.SerializerMethodField()  # ADD THIS
     employee_name = serializers.SerializerMethodField()
     rbm_name = serializers.SerializerMethodField()
@@ -90,13 +45,12 @@ class DoctorVideoSerializer(serializers.ModelSerializer):
             'image', 'specialization', 'specialization_key',
             'mobile_number', 'whatsapp_number', 'description',
             'output_video', 'created_at', 'employee',
-            'latest_output_video', 'latest_output_image',  # ADD latest_output_image HERE
+            'latest_output_image',  # ADD latest_output_image HERE
             'employee_name', 'rbm_name',
         ]
 
     def get_latest_output_video(self, obj):
-        videos = obj.doctor_videos.all().order_by('-id')
-        return DoctorOutputVideoSerializer(videos, many=True).data
+        []
 
     def get_latest_output_image(self, obj):  # ADD THIS METHOD
         images = ImageContent.objects.filter(doctor=obj).order_by('-id')

@@ -67,15 +67,15 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 class BurstRateThrottle(UserRateThrottle):
     scope = 'burst'
-    rate = '60/min'
+    rate = '30/min'  # Reduced from 60 to prevent spam
 
 class SustainedRateThrottle(UserRateThrottle):
     scope = 'sustained'
-    rate = '1000/day'
+    rate = '1000/day'  # Keep this - reasonable daily limit
 
 class MediaGenerationThrottle(UserRateThrottle):
     scope = 'media_generation'
-    rate = '10/hour'
+    rate = '500/hour'  # Increased from 10 to 500 - much more user-friendly
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -84,27 +84,25 @@ from distutils.util import strtobool
 from .models import (
     Employee,
     DoctorVideo,
-    Doctor,
     EmployeeLoginHistory,
     VideoTemplates,
-    DoctorOutputVideo,
     ImageContent,
     Brand,
+    DoctorUsageHistory
     
 )
+
 from .serializers import (
     EmployeeLoginSerializer,
     EmployeeSerializer,
     DoctorSerializer,
     DoctorVideoSerializer,
     VideoTemplatesSerializer,
-    DoctorOutputVideoSerializer,
     ImageContentSerializer,
     ImageTemplateSerializer,
     BrandSerializer,
     
 )
-
 import psutil
 import os
 from django.core.cache import cache
@@ -560,244 +558,15 @@ class VideoGenViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Save DoctorVideo, and enqueue video generation via Celery (new behavior).
-        Also records a DoctorOutputVideo with the intended output path.
+        Save DoctorVideo only - video generation disabled
         """
         logger.info("VideoGenViewSet.perform_create called")
-        request = self.request
         doctor = serializer.save()
         logger.info(f"Doctor saved: {doctor.name} (ID: {doctor.id})")
-
-        if not doctor.image:
-            logger.warning(f"Doctor {doctor.name} has no image, skipping video generation")
-            return
-
-        # Choose template: explicit id or first active
-        template_id = request.data.get("template_id")
-        template = VideoTemplates.objects.filter(id=template_id).first() if template_id \
-            else VideoTemplates.objects.filter(status=True).first()
-
-        if not template:
-            logger.error("No template found, aborting video generation")
-            return
-
-        # Prepare paths
-        output_filename = f"{doctor.id}_{template.id}_output.mp4"
-        output_dir = os.path.join(settings.MEDIA_ROOT, "output", str(doctor.employee.id), str(doctor.id))
-        os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, output_filename)
-        logger.info(f"Video will be saved to: {output_path}")
-
-        # Enqueue Celery task with dynamic parameters from template
-        try:
-            generate_custom_video_task.delay(
-                doctor.id,
-                template.id,
-                output_path,
-                template.template_video.path,
-                doctor.image.path,
-                doctor.name,
-                doctor.clinic,
-                doctor.city,
-                doctor.specialization_key,
-                template.time_duration,
-                doctor.state,
-                template.resolution,
-                template.base_x_axis,
-                template.base_y_axis,
-                template.line_spacing,
-                template.overlay_x,
-                template.overlay_y,
-            )
-            logger.info("Video generation task enqueued to Celery")
-
-            # Create DB record pointing to the (future) file
-            relative_path = os.path.relpath(output_path, settings.MEDIA_ROOT)
-            DoctorOutputVideo.objects.create(
-                doctor=doctor,
-                template=template,
-                video_file=relative_path
-            )
-            logger.info("DoctorOutputVideo record created")
-
-        except Exception as e:
-            logger.error(f"Error enqueuing video generation: {e}")
-
-    def generate_custom_video(
-        self,
-        main_video_path,
-        image_path,
-        name,
-        clinic,
-        city,
-        specialization_key,
-        state,
-        output_path,
-        time_duration="5-10,45-50",
-        resolution="415x410",
-        base_x="(main_w/2)-160",
-        base_y="(main_h/2)-60",
-        line_spacing="60",
-        overlay_x="350",
-        overlay_y="70"
-    ):
-        """
-        Synchronous FFmpeg composition with dynamic overlay slots and drawtext.
-        Kept here for compatibility and for non-Celery flows.
-        """
-        logger.info(f"Starting video generation for doctor: {name}")
-
-        if not os.path.exists(main_video_path):
-            raise Exception(f"Template video not found: {main_video_path}")
-        if not os.path.exists(image_path):
-            raise Exception(f"Doctor image not found: {image_path}")
-
-        temp_dir = os.path.join(settings.MEDIA_ROOT, "temp")
-        os.makedirs(temp_dir, exist_ok=True)
-
-        fps = 30
-        fade_duration = 3
-
-        # Dynamic slots
-        slots = self.parse_time_duration(time_duration)
-
-        # Create pan/zoom temp clips for each slot
-        temp_videos = []
-        for i, (start, end) in enumerate(slots):
-            duration = end - start
-            total_frames = duration * fps
-            zoom_effect = (
-                f"zoompan=z='1+0.00003*in':"
-                f"x='(iw/2)-(iw/zoom/2)':"
-                f"y='(ih/2)-(ih/zoom/2)':d={total_frames}:s={resolution}:fps={fps}"
-            )
-            fade_out_start = max(0, duration - fade_duration)
-            fade_effect = f"format=rgba,fade=t=in:st=0:d={fade_duration}:alpha=1,fade=t=out:st={fade_out_start}:d={fade_duration}:alpha=1"
-            vf = f"scale={resolution},{zoom_effect},{fade_effect}"
-            temp_video = os.path.join(temp_dir, f"temp_image_vid_{i}.mp4")
-
-            try:
-                subprocess.run(
-                    ["ffmpeg", "-loop", "1", "-i", image_path, "-vf", vf, "-t", str(duration), "-y", temp_video],
-                    check=True, capture_output=True, text=True
-                )
-            except subprocess.CalledProcessError as e:
-                logger.error(f"Failed to create temp video {i}: {e.stderr}")
-                raise Exception(f"Failed to create temp video: {e.stderr}")
-
-            temp_videos.append((temp_video, start, end))
-
-        # Drawtext lines
-        text_lines = [str(x or "").strip() for x in [name, specialization_key, clinic, city, state]]
+        # Video generation disabled - only saving doctor data
 
 
-        # Select a font present on the system/container
-# Select a font present on the system/container
-        font_paths = [
-            os.path.join(settings.BASE_DIR, "fonts", "RobotoSlab-Medium.ttf"),
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",     # Linux
-            "/System/Library/Fonts/Arial.ttf",                     # macOS
-            r"C:\Windows\Fonts\arial.ttf",                         # Windows (common)
-            r"C:\Windows\Fonts\ARIAL.TTF",                         # Windows (fallback)
-            "arial.ttf",
-        ]
-
-        font = None
-        for fp in font_paths:
-            if os.path.exists(fp):
-                font = fp  # found a real path
-                break
-        if not font:
-            font = "Arial"  # family name for drawtext `font=`
-
-        # Do we have a file path or a family name?
-        # Normalize Windows paths for ffmpeg drawtext (forward slashes + escape ':' in drive letters)
-        if isinstance(font, str) and (os.path.isabs(font) or font.lower().endswith(".ttf")):
-            if os.name == "nt":
-                font = font.replace("\\", "/").replace(":", r"\:")
-            font_is_path = True
-        else:
-            font_is_path = False
-
-
-        # Build drawtext filters
-
-        text_filters = []
-        for start, end in slots:
-            alpha_expr = f"if(lt(t\\,{start}+3),(t-{start})/3,if(lt(t\\,{end}-3),1,({end}-t)/3))"
-            for j, text in enumerate(text_lines):
-                if not text:
-                    continue
-                safe_text = _ff_esc(text)
-                x_pos = f"{base_x}"
-                y_pos = f"{base_y} + {j}*{line_spacing}"
-                if font_is_path:
-                    font_part = f"fontfile='{font}':"
-                else:
-                    font_part = f"font='{font}':"
-
-                drawtext = (
-                    f"drawtext=text='{safe_text}':{font_part}fontcolor=black:fontsize=40:"
-                    f"x={x_pos}:y={y_pos}:enable='between(t,{start},{end})':alpha='{alpha_expr}'"
-                )
-                text_filters.append(drawtext)
-
-
-
-        ox = _num_or_expr(overlay_x, "0")
-        oy = _num_or_expr(overlay_y, "0")
-        overlay_x1 = f"(main_w-overlay_w)/2-({ox})"
-        overlay_y1 = f"(main_h-overlay_h)/2+({oy})"
-
-
-        # Build overlay chain dynamically for any number of slots
-        overlay_filters = []
-        for i, (start, end) in enumerate(slots):
-            input_label = "[0:v]" if i == 0 else f"[v{i}]"
-            output_label = f"[v{i+1}]"
-            overlay_filters.append(
-                f"{input_label}[{i+1}:v]overlay=x={overlay_x1}:y={overlay_y1}:enable='between(t,{start},{end})'{output_label}"
-            )
-
-        final_input = f"[v{len(slots)}]"
-        filter_complex = f"{';'.join(overlay_filters)};{final_input}{','.join(text_filters)}[v]"
-
-        cmd = ["ffmpeg", "-i", main_video_path]
-        for temp_video, _, _ in temp_videos:
-            cmd.extend(["-i", temp_video])
-        # cmd.extend(["-filter_complex", filter_complex, "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-c:a", "copy", "-y", output_path])
-        cmd.extend([
-                "-filter_complex", filter_complex,
-                "-map", "[v]", "-map", "0:a?",
-                "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                "-c:a", "copy",
-                "-movflags", "+faststart",
-                "-y", output_path
-            ])
-
-
-        try:
-            result = subprocess.run(
-                cmd, 
-                check=True, 
-                capture_output=True, 
-                text=True,
-                timeout=1800  # 30 minute timeout
-            )
-        except subprocess.TimeoutExpired:
-            logger.error("FFmpeg process timed out after 30 minutes")
-            raise Exception("Video generation timed out")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Final FFmpeg failed: {e.stderr}")
-            raise Exception(f"Video generation failed: {e.stderr}")
-        finally:
-            for temp_video, _, _ in temp_videos:
-                if os.path.exists(temp_video):
-                    try:
-                        os.remove(temp_video)
-                    except OSError:
-                        pass
-
+    
 class DoctorVideoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DoctorVideoSerializer
     pagination_class = Pagination_class
@@ -898,6 +667,56 @@ def bulk_upload_employees(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# class DoctorListByEmployee(APIView):
+#     permission_classes = [IsAuthenticated]
+    
+#     def get(self, request):
+#         employee_id = request.GET.get('employee_id')
+#         user_type = request.GET.get('user_type')
+#         search = request.GET.get('search', '')
+#         specialization = request.GET.get('specialization', '')
+        
+#         if not employee_id:
+#             return Response({"detail": "employee_id is required."}, status=400)
+        
+#         try:
+#             employee = Employee.objects.get(employee_id=employee_id)
+#         except Employee.DoesNotExist:
+#             return Response({"detail": "Employee not found."}, status=404)
+        
+#         # Modified logic to include shared doctors
+#         if user_type in ["Admin", "SuperAdmin"]:
+#             doctors = DoctorVideo.objects.all()
+#         else:
+#             # Get doctors owned by this employee
+#             owned_doctors = DoctorVideo.objects.filter(employee=employee)
+            
+#             # Get doctors used by this employee (from usage history)
+#             used_doctor_ids = DoctorUsageHistory.objects.filter(
+#                 employee=employee,
+#                 content_type='image'
+#             ).values_list('doctor_id', flat=True).distinct()
+            
+#             used_doctors = DoctorVideo.objects.filter(id__in=used_doctor_ids)
+            
+#             # Combine both querysets
+#             doctors = (owned_doctors | used_doctors).distinct()
+        
+#         # Apply search filters
+#         if search:
+#             doctors = doctors.filter(
+#                 Q(name__icontains=search) | 
+#                 Q(clinic__icontains=search)
+#             )
+#         if specialization:
+#             doctors = doctors.filter(specialization__iexact=specialization)
+        
+#         doctors = doctors.order_by('-created_at')
+#         paginator = Pagination_class()
+#         page = paginator.paginate_queryset(doctors, request)
+#         serializer = DoctorVideoSerializer(page, many=True)
+#         return paginator.get_paginated_response(serializer.data)
+    
 
 class DoctorListByEmployee(APIView):
     permission_classes = [IsAuthenticated]
@@ -910,17 +729,36 @@ class DoctorListByEmployee(APIView):
         
         if not employee_id:
             return Response({"detail": "employee_id is required."}, status=400)
-            
+        
         try:
             employee = Employee.objects.get(employee_id=employee_id)
+            print(f"Employee found: {employee.first_name} {employee.last_name}")
         except Employee.DoesNotExist:
             return Response({"detail": "Employee not found."}, status=404)
-            
-        # Simple query - database handles concurrency
+        
+        # Modified logic to include shared doctors
         if user_type in ["Admin", "SuperAdmin"]:
             doctors = DoctorVideo.objects.all()
+            print(f"Admin mode: returning all {doctors.count()} doctors")
         else:
-            doctors = DoctorVideo.objects.filter(employee=employee)
+            # Get doctors owned by this employee
+            owned_doctors = DoctorVideo.objects.filter(employee=employee)
+            print(f"Doctors owned by {employee_id}: {owned_doctors.count()}")
+            
+            # Get doctors used by this employee (from usage history)
+            used_doctor_ids = DoctorUsageHistory.objects.filter(
+                employee=employee,
+                content_type='image'
+            ).values_list('doctor_id', flat=True).distinct()
+            
+            print(f"Doctor IDs used by {employee_id}: {list(used_doctor_ids)}")
+            
+            used_doctors = DoctorVideo.objects.filter(id__in=used_doctor_ids)
+            print(f"Doctors used by {employee_id}: {used_doctors.count()}")
+            
+            # Combine both querysets
+            doctors = (owned_doctors | used_doctors).distinct()
+            print(f"Total doctors {employee_id} should see: {doctors.count()}")
         
         # Apply search filters
         if search:
@@ -930,13 +768,13 @@ class DoctorListByEmployee(APIView):
             )
         if specialization:
             doctors = doctors.filter(specialization__iexact=specialization)
-            
+        
         doctors = doctors.order_by('-created_at')
         paginator = Pagination_class()
         page = paginator.paginate_queryset(doctors, request)
         serializer = DoctorVideoSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
-    
+
 
 class DoctorVideoListView(APIView):
     def get(self, request):
@@ -959,20 +797,8 @@ class DoctorVideoListView(APIView):
 
 class DoctorVideoGeneration(APIView):
     def post(self, request):
-        doctor_id = request.data.get('id')
-        if not doctor_id:
-            return Response({"detail": "doctor_id is required."}, status=400)
-        try:
-            doctor_data = DoctorVideo.objects.get(id=doctor_id)
-            generate_video_for_doctor(doctor_data)
-            return Response({
-                "detail": "Video generation successful.",
-                "video_path": request.build_absolute_uri(doctor_data.output_video.url) if doctor_data.output_video else None
-            })
-        except DoctorVideo.DoesNotExist:
-            return Response({"detail": "Doctor not found for this doctor_id."}, status=404)
-        except Exception as e:
-            return Response({"detail": f"Error during video generation: {str(e)}"}, status=500)
+        pass
+
 
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
@@ -1116,11 +942,8 @@ class DoctorVideoExportExcelView(APIView):
         sheet.append(headers)
         doctor_videos = DoctorVideo.objects.all()
         for video in doctor_videos:
-            latest_output = video.doctoroutputvideo_set.order_by('-created_at').first()
-            if latest_output and latest_output.video_file:
-                output_video_url = request.build_absolute_uri(latest_output.video_file.url)
-                template_name = latest_output.template.name if latest_output.template else ""
-            elif video.output_video:
+            # DoctorOutputVideo model removed - use basic output_video field only
+            if video.output_video:
                 output_video_url = request.build_absolute_uri(video.output_video.url)
                 template_name = ""
             else:
@@ -1321,266 +1144,9 @@ class VideoTemplateAPIView(APIView):
 # ------------------------------------------------------------------------------
 
 class GenerateDoctorOutputVideoView(APIView):
-
-    def parse_time_duration(self, time_duration_str):
-        if not time_duration_str or not time_duration_str.strip():
-            raise ValueError("Time duration cannot be empty")
-        try:
-            slots = []
-            for time_range in time_duration_str.strip().split(','):
-                start_str, end_str = time_range.strip().split('-')
-                start_time = int(start_str.strip())
-                end_time = int(end_str.strip())
-                if start_time >= end_time:
-                    raise ValueError(f"Start time ({start_time}) must be less than end time ({end_time})")
-                if start_time < 0:
-                    raise ValueError(f"Start time ({start_time}) cannot be negative")
-                slots.append((start_time, end_time))
-            return slots
-        except ValueError as e:
-            if "not enough values" in str(e) or "too many values" in str(e):
-                raise ValueError(
-                    f"Invalid time duration format: '{time_duration_str}'. "
-                    "Use '10-15' or '10-15,46-50'"
-                )
-            raise
-        except Exception as e:
-            raise ValueError(f"Error parsing time duration '{time_duration_str}': {str(e)}")
-
-    def post(self, request):
-        doctor_id = request.data.get("doctor_id")
-        template_id = request.data.get("template_id")
-        if not doctor_id:
-            return Response({"error": "doctor_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            doctor = DoctorVideo.objects.get(id=doctor_id)
-        except DoctorVideo.DoesNotExist:
-            return Response({"error": "Doctor not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if template_id:
-            try:
-                template = VideoTemplates.objects.get(id=template_id)
-            except VideoTemplates.DoesNotExist:
-                return Response({"error": "Template not found."}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            template = VideoTemplates.objects.filter(status=True).first()
-            if not template:
-                return Response({"error": "No default template available."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not doctor.image:
-            return Response({"error": "Doctor does not have an image."}, status=status.HTTP_400_BAD_REQUEST)
-
-        image_path = doctor.image.path
-        random_key = uuid.uuid4().hex[:8]
-        output_filename = f"{doctor.id}_{template.id}_{random_key}_output.mp4"
-        output_dir = os.path.join(settings.MEDIA_ROOT, "output", str(doctor.employee.id), str(doctor.id))
-        os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, output_filename)
-
-        try:
-            self.generate_custom_video(
-                main_video_path=template.template_video.path,
-                image_path=image_path,
-                name=doctor.name,
-                clinic=doctor.clinic,
-                city=doctor.city,
-                specialization_key=doctor.specialization_key,
-                state=doctor.state,
-                output_path=output_path,
-                time_duration=template.time_duration,
-                resolution=template.resolution,
-                base_x=template.base_x_axis,
-                base_y=template.base_y_axis,
-                line_spacing=template.line_spacing,
-                overlay_x=template.overlay_x,
-                overlay_y=template.overlay_y,
-            )
-            relative_path = os.path.relpath(output_path, settings.MEDIA_ROOT)
-            output_video = DoctorOutputVideo.objects.create(
-                doctor=doctor,
-                template=template,
-                video_file=relative_path
-            )
-            serializer = DoctorOutputVideoSerializer(output_video)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.error(f"Video generation failed: {e}")
-            return Response({"error": "Video generation failed.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def generate_custom_video(
-        self,
-        main_video_path,
-        image_path,
-        name,
-        clinic,
-        city,
-        specialization_key,
-        state,
-        output_path,
-        time_duration="5-10,45-50",
-        resolution="415x410",
-        base_x="(main_w/2)-160",
-        base_y="(main_h/2)-60",
-        line_spacing="60",
-        overlay_x="350",
-        overlay_y="70"
-    ):
-        if not os.path.exists(main_video_path):
-            raise Exception(f"Template video not found: {main_video_path}")
-        if not os.path.exists(image_path):
-            raise Exception(f"Doctor image not found: {image_path}")
-
-        temp_dir = os.path.join(settings.MEDIA_ROOT, "temp")
-        os.makedirs(temp_dir, exist_ok=True)
-
-        fps = 30
-        fade_duration = 3
-        slots = self.parse_time_duration(time_duration)
-
-        temp_videos = []
-        for i, (start, end) in enumerate(slots):
-            duration = end - start
-            total_frames = duration * fps
-            zoom_effect = (
-                f"zoompan=z='1+0.00003*in':"
-                f"x='(iw/2)-(iw/zoom/2)':"
-                f"y='(ih/2)-(ih/zoom/2)':d={total_frames}:s={resolution}:fps={fps}"
-            )
-            fade_out_start = max(0, duration - fade_duration)
-            fade_effect = f"format=rgba,fade=t=in:st=0:d={fade_duration}:alpha=1,fade=t=out:st={fade_out_start}:d={fade_duration}:alpha=1"
-            vf = f"scale={resolution},{zoom_effect},{fade_effect}"
-            temp_video = os.path.join(temp_dir, f"temp_image_vid_{i}.mp4")
-
-            try:
-                subprocess.run(
-                    ["ffmpeg", "-loop", "1", "-i", image_path, "-vf", vf, "-t", str(duration), "-y", temp_video],
-                    check=True, capture_output=True, text=True
-                )
-            except subprocess.CalledProcessError as e:
-                logger.error(f"Failed to create temp video {i}: {e.stderr}")
-                raise Exception(f"Failed to create temp video: {e.stderr}")
-
-            temp_videos.append((temp_video, start, end))
-
-        text_lines = [str(x or "").strip() for x in [name, specialization_key, clinic, city, state]]
-
-# Select a font present on the system/container
-        font_paths = [
-            os.path.join(settings.BASE_DIR, "fonts", "RobotoSlab-Medium.ttf"),
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",     # Linux
-            "/System/Library/Fonts/Arial.ttf",                     # macOS
-            r"C:\Windows\Fonts\arial.ttf",                         # Windows (common)
-            r"C:\Windows\Fonts\ARIAL.TTF",                         # Windows (fallback)
-            "arial.ttf",
-        ]
-
-        font = None
-        for fp in font_paths:
-            if os.path.exists(fp):
-                font = fp  # found a real path
-                break
-        if not font:
-            font = "Arial"  # family name for drawtext `font=`
-
-        # Do we have a file path or a family name?
-        # Normalize Windows paths for ffmpeg drawtext (forward slashes + escape ':' in drive letters)
-        if isinstance(font, str) and (os.path.isabs(font) or font.lower().endswith(".ttf")):
-            if os.name == "nt":
-                font = font.replace("\\", "/").replace(":", r"\:")
-            font_is_path = True
-        else:
-            font_is_path = False
+    pass
 
 
-
-        text_filters = []
-        for start, end in slots:
-            alpha_expr = f"if(lt(t\\,{start}+3),(t-{start})/3,if(lt(t\\,{end}-3),1,({end}-t)/3))"
-            for j, text in enumerate(text_lines):
-                if not text:
-                    continue
-                safe_text = _ff_esc(text)
-                x_pos = f"{base_x}"
-                y_pos = f"{base_y} + {j}*{line_spacing}"
-                if font_is_path:
-                    font_part = f"fontfile='{font}':"
-                else:
-                    font_part = f"font='{font}':"
-
-                drawtext = (
-                    f"drawtext=text='{safe_text}':{font_part}fontcolor=black:fontsize=40:"
-                    f"x={x_pos}:y={y_pos}:enable='between(t,{start},{end})':alpha='{alpha_expr}'"
-                )
-                text_filters.append(drawtext)
-
-
-        ox = _num_or_expr(overlay_x, "0")
-        oy = _num_or_expr(overlay_y, "0")
-        overlay_x1 = f"(main_w-overlay_w)/2-({ox})"
-        overlay_y1 = f"(main_h-overlay_h)/2+({oy})"
-
-
-        overlay_filters = []
-        for i, (start, end) in enumerate(slots):
-            input_label = "[0:v]" if i == 0 else f"[v{i}]"
-            output_label = f"[v{i+1}]"
-            overlay_filters.append(
-                f"{input_label}[{i+1}:v]overlay=x={overlay_x1}:y={overlay_y1}:enable='between(t,{start},{end})'{output_label}"
-            )
-
-        final_input = f"[v{len(slots)}]"
-        filter_complex = f"{';'.join(overlay_filters)};{final_input}{','.join(text_filters)}[v]"
-
-        cmd = ["ffmpeg", "-i", main_video_path]
-        for temp_video, _, _ in temp_videos:
-            cmd.extend(["-i", temp_video])
-        cmd.extend([
-            "-filter_complex", filter_complex,
-            "-map", "[v]", "-map", "0:a?",
-            "-c:v", "libx264", "-pix_fmt", "yuv420p",
-            "-c:a", "copy",
-            "-movflags", "+faststart",
-            "-y", output_path
-        ])
-
-
-        try:
-            result = subprocess.run(
-                cmd, 
-                check=True, 
-                capture_output=True, 
-                text=True,
-                timeout=1800  # 30 minute timeout
-            )
-        except subprocess.TimeoutExpired:
-            logger.error("FFmpeg process timed out after 30 minutes")
-            raise Exception("Video generation timed out")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Final FFmpeg failed: {e.stderr}")
-            raise Exception(f"Video generation failed: {e.stderr}")
-        finally:
-            for temp_video, _, _ in temp_videos:
-                if os.path.exists(temp_video):
-                    try:
-                        os.remove(temp_video)
-                    except OSError:
-                        pass
-
-    def get(self, request):
-        doctor_id = request.query_params.get("doctor_id")
-        employee_id = request.query_params.get("employee_id")
-        videos = DoctorOutputVideo.objects.all().order_by('-id')
-        if doctor_id:
-            videos = videos.filter(doctor_id=doctor_id)
-        if employee_id:
-            videos = videos.filter(doctor__employee__employee_id=employee_id)
-        paginator = Pagination_class()
-        paginated_videos = paginator.paginate_queryset(videos, request)
-        serializer = DoctorOutputVideoSerializer(paginated_videos, many=True)
-        return paginator.get_paginated_response(serializer.data)
-
-# ------------------------------------------------------------------------------
 # Employee updates from Excel
 # ------------------------------------------------------------------------------
 
@@ -1617,8 +1183,8 @@ class TemplateWiseVideoCountView(APIView):
             # Count ImageContent instead of DoctorOutputVideo
             template_counts = ImageContent.objects.values("template__id", "template__name").annotate(content_count=Count("id")).order_by("-content_count")
         else:
-            # Original video logic
-            template_counts = DoctorOutputVideo.objects.values("template__id", "template__name").annotate(video_count=Count("id")).order_by("-video_count")
+            # Video functionality disabled - return empty results
+            template_counts = []
         
         data = [{
             "template_id": item["template__id"],
@@ -1677,8 +1243,8 @@ class ImageTemplateAPIView(APIView):
 
 class GenerateImageContentView(APIView):
     """Generate image with text overlay - DoctorVideo only"""
-    # throttle_classes = [MediaGenerationThrottle, BurstRateThrottle]
-
+    throttle_classes = [BurstRateThrottle] 
+    permission_classes = [IsAuthenticated]
     @monitor_resources
     def post(self, request):
         # Check system resources before processing
@@ -1831,7 +1397,8 @@ class GenerateImageContentView(APIView):
                 template_id=template_id,
                 doctor_id=doctor_video.id,
                 content_data=content_data,
-                selected_brand_ids=selected_brand_ids
+                selected_brand_ids=selected_brand_ids,
+                current_employee_id=employee_id  # Add this line
             )
             
             # Return task ID to frontend
@@ -1861,6 +1428,14 @@ class GenerateImageContentView(APIView):
 
             return Response(resp, status=status.HTTP_201_CREATED)
         except Exception as e:
+            # Handle database connection issues
+            if "too many clients" in str(e) or "connection" in str(e).lower():
+                logger.error(f"Database connection issue: {e}")
+                return Response({
+                    "error": "System temporarily unavailable",
+                    "retry_after": 30
+                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            
             logger.error(f"Image generation failed: {e}")
             logger.error(f"Template ID: {template.id}, Template has image: {bool(template.template_image)}")
             if template.template_image:
@@ -1888,19 +1463,11 @@ class GenerateImageContentView(APIView):
         try:
             template_image = Image.open(template.template_image.path)
             
-            # Limit image size to prevent memory issues - MOVE THIS UP
-            max_size = (2048, 2048)
-            if template_image.size[0] > max_size[0] or template_image.size[1] > max_size[1]:
-                template_image.thumbnail(max_size, Image.Resampling.LANCZOS)
                 
             # Convert to RGB if needed to reduce memory
             if template_image.mode not in ('RGB', 'RGBA'):
                 template_image = template_image.convert('RGB')
             
-            # Limit image size to prevent memory issues
-            max_size = (2048, 2048)
-            if template_image.size[0] > max_size[0] or template_image.size[1] > max_size[1]:
-                template_image.thumbnail(max_size, Image.Resampling.LANCZOS)
             
             draw = ImageDraw.Draw(template_image)
             
@@ -1965,7 +1532,6 @@ class GenerateImageContentView(APIView):
 
             all_text_data = {
                 'name': content_data.get('doctor_name', doctor.name),
-                'clinic': content_data.get('doctor_clinic', doctor.clinic),
                 'city': city_state_combined,  # Combined city, state
                 'specialization': content_data.get('doctor_specialization', doctor.specialization),
                 'mobile': doctor.mobile_number,
@@ -1973,7 +1539,7 @@ class GenerateImageContentView(APIView):
             }
 
             # DOCTOR FIELDS RESPONSIVE CENTER ALIGNMENT (removed 'state' since it's now combined with city)
-            doctor_fields = ['name', 'specialization', 'clinic', 'city']
+            doctor_fields = ['name', 'specialization', 'city']
             doctor_text_data = {field: all_text_data[field] for field in doctor_fields if field in all_text_data and all_text_data[field] and field in positions}
 
             if doctor_text_data:
@@ -2199,13 +1765,19 @@ class GenerateImageContentView(APIView):
             output_path = os.path.join(output_dir, f"temp_image_{uuid.uuid4().hex}.png")
             
             # Convert to RGB before saving to ensure compatibility
+            # Save with transparency preserved - DON'T convert to RGB
             if template_image.mode == 'RGBA':
-                # Create white background and paste RGBA image on it
-                rgb_image = Image.new('RGB', template_image.size, (255, 255, 255))
-                rgb_image.paste(template_image, mask=template_image.split()[-1])
-                rgb_image.save(output_path)
+                template_image.save(output_path, 'PNG', 
+                                quality=100, 
+                                optimize=False, 
+                                compress_level=0,
+                                dpi=(300, 300))
             else:
-                template_image.save(output_path)
+                template_image.save(output_path, 'PNG', 
+                                quality=100, 
+                                optimize=False, 
+                                compress_level=0,
+                                dpi=(300, 300))
             
             return output_path
         #    
@@ -2318,34 +1890,77 @@ class GenerateImageContentView(APIView):
                             
 
                         brand_img = Image.open(brand.brand_image.path)
+                        # DEBUG: Check brand image properties
+                        print(f"🔍 Brand {brand.name}:")
+                        print(f"  - Mode: {brand_img.mode}")
+                        print(f"  - Size: {brand_img.size}")
+                        print(f"  - Has transparency: {brand_img.mode in ('RGBA', 'LA') or 'transparency' in brand_img.info}")
+                        if brand_img.mode == 'RGBA':
+                            # Check if image actually uses transparency
+                            alpha = brand_img.split()[-1]
+                            alpha_range = alpha.getextrema()
+                            print(f"  - Alpha range: {alpha_range}")
+                            print(f"  - Has real transparency: {alpha_range[0] < 255}")
                         if hasattr(self, '_current_brand_images'):
                             self._current_brand_images.append(brand_img)
 
-                        # Check image size before processing
-                        if brand_img.size[0] > 1000 or brand_img.size[1] > 1000:
-                            brand_img.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
 
-                        # Convert to RGB safely
-                        if brand_img.mode != 'RGB':
-                            try:
-                                rgb_img = Image.new('RGB', brand_img.size, (255, 255, 255))
-                                rgb_img.paste(brand_img.convert('RGBA'), (0, 0))
-                                brand_img.close()
-                                brand_img = rgb_img
-                                if hasattr(self, '_current_brand_images'):
-                                    self._current_brand_images[-1] = brand_img
-                            except Exception as e:
-                                logger.warning(f"Image conversion failed for {brand.name}: {e}")
-                                brand_img = brand_img.convert('RGB')
+                        # Keep transparency for brand images - DON'T convert to RGB
+                        # Force RGBA mode to ensure transparency support
+                        if brand_img.mode != 'RGBA':
+                            if brand_img.mode == 'P' and 'transparency' in brand_img.info:
+                                # Handle palette mode with transparency
+                                brand_img = brand_img.convert('RGBA')
+                            elif brand_img.mode in ('L', 'LA'):
+                                # Handle grayscale with alpha
+                                brand_img = brand_img.convert('RGBA')
+                            else:
+                                # Convert other modes to RGBA
+                                brand_img = brand_img.convert('RGBA')
+
+                        print(f"🔍 After conversion - Mode: {brand_img.mode}")
+                        # Don't force RGB conversion - preserve transparency
                         
                         # Resize brand image
-                        brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
+                        # brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
+
+                        # Resize brand image with better quality
+                        original_ratio = brand_img.width / brand_img.height
+                        slot_ratio = slot_width / slot_height
+
+                        if original_ratio > slot_ratio:
+                            # Image is wider - fit by width
+                            new_width = slot_width
+                            new_height = int(slot_width / original_ratio)
+                        else:
+                            # Image is taller - fit by height
+                            new_height = slot_height
+                            new_width = int(slot_height * original_ratio)
+
+                        # Resize with high quality
+                        brand_img = brand_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+                        # Center the image in the slot if needed
+                        # Center the image in the slot with transparent background
+                        if new_width != slot_width or new_height != slot_height:
+                            centered_img = Image.new('RGBA', (slot_width, slot_height), (0, 0, 0, 0))  # Fully transparent
+                            paste_x = (slot_width - new_width) // 2
+                            paste_y = (slot_height - new_height) // 2
+                            if brand_img.mode == 'RGBA':
+                                centered_img.paste(brand_img, (paste_x, paste_y), brand_img)  # Use alpha mask
+                            else:
+                                centered_img.paste(brand_img, (paste_x, paste_y))
+                            brand_img = centered_img
                         
                         # Paste brand image
+                        # Paste brand image with proper alpha handling
                         if template_image.mode != 'RGBA':
                             template_image = template_image.convert('RGBA')
-                        
-                        template_image.paste(brand_img, (final_x, final_y))
+
+                        if brand_img.mode == 'RGBA':
+                            template_image.paste(brand_img, (final_x, final_y), brand_img)  # Use alpha mask
+                        else:
+                            template_image.paste(brand_img, (final_x, final_y))
                         
                     except (IOError, OSError) as e:
                         logger.warning(f"Failed to process brand image {brand.id}: {e}")
@@ -2400,17 +2015,6 @@ class DoctorSearchView(APIView):
                     "specialization": doctor_video.specialization, "state": doctor_video.state,
                     "model": "DoctorVideo"
                 }
-            })
-        doctor = Doctor.objects.filter(mobile_number=mobile).first()
-        if doctor:
-            return Response({
-                "found": True,
-                "doctor": {
-                    "id": doctor.id, "name": doctor.name, "clinic": doctor.clinic,
-                    "city": doctor.city, "mobile": doctor.mobile_number,
-                    "specialization": doctor.specialization, "model": "Doctor"
-                },
-                "note": "Doctor found in main database. Will be converted to DoctorVideo when image is generated."
             })
         return Response({"found": False})
 
@@ -2512,11 +2116,11 @@ class DoctorUpdateDeleteView(APIView):
             doctor = self.get_doctor(doctor_id, employee_id)
             doctor_name = doctor.name
             
-            # Delete associated content first to avoid foreign key constraints
-            deleted_videos = DoctorOutputVideo.objects.filter(doctor=doctor).count()
+            # DoctorOutputVideo model removed - only delete images
+            deleted_videos = 0  # No video model to count
             deleted_images = ImageContent.objects.filter(doctor=doctor).count()
             
-            DoctorOutputVideo.objects.filter(doctor=doctor).delete()
+            # DoctorOutputVideo.objects.filter(doctor=doctor).delete()  # Model removed
             ImageContent.objects.filter(doctor=doctor).delete()
             
             # Delete the doctor
@@ -2537,101 +2141,6 @@ class DoctorUpdateDeleteView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # ------------------------------------------------------------------------------
-# Regenerate Content (video/image) with permissions
-# ------------------------------------------------------------------------------
-
-@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='post')
-class RegenerateContentView(APIView):
-    permission_classes = []
-    authentication_classes = []
-
-    def post(self, request):
-        doctor_id = request.data.get('doctor_id')
-        template_id = request.data.get('template_id')
-        content_type = request.data.get('content_type')  # 'video' or 'image'
-
-        if not all([doctor_id, template_id, content_type]):
-            return Response({'error': 'doctor_id, template_id, and content_type are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            doctor = DoctorVideo.objects.get(id=doctor_id)
-            employee_id = request.data.get('employee_id')
-            if not employee_id:
-                return Response({'error': 'employee_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-            try:
-                current_employee = Employee.objects.get(employee_id=employee_id)
-            except Employee.DoesNotExist:
-                return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
-            if current_employee.user_type != 'Admin' and doctor.employee != current_employee:
-                return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
-
-            template = VideoTemplates.objects.get(id=template_id)
-
-            if content_type == 'video':
-                return self.regenerate_video(doctor, template)
-            elif content_type == 'image':
-                return self.regenerate_image(doctor, template, request.data.get('content_data', {}))
-            else:
-                return Response({'error': 'Invalid content_type'}, status=status.HTTP_400_BAD_REQUEST)
-
-        except DoctorVideo.DoesNotExist:
-            return Response({'error': 'Doctor not found'}, status=status.HTTP_404_NOT_FOUND)
-        except VideoTemplates.DoesNotExist:
-            return Response({'error': 'Template not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def regenerate_video(self, doctor, template):
-        if not doctor.image:
-            return Response({'error': 'Doctor has no image for video generation'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            output_filename = f"{doctor.id}_{template.id}_{uuid.uuid4().hex[:8]}_output.mp4"
-            output_dir = os.path.join(settings.MEDIA_ROOT, "output", str(doctor.employee.id), str(doctor.id))
-            os.makedirs(output_dir, exist_ok=True)
-            output_path = os.path.join(output_dir, output_filename)
-
-            # Reuse sync compose (you can swap to Celery if preferred)
-            VideoGenViewSet().generate_custom_video(
-                main_video_path=template.template_video.path,
-                image_path=doctor.image.path,
-                name=doctor.name,
-                clinic=doctor.clinic,
-                city=doctor.city,
-                specialization_key=doctor.specialization_key,
-                state=doctor.state,
-                output_path=output_path,
-                time_duration=template.time_duration,
-                resolution=template.resolution,
-                base_x=template.base_x_axis,
-                base_y=template.base_y_axis,
-                line_spacing=template.line_spacing,
-                overlay_x=template.overlay_x,
-                overlay_y=template.overlay_y,
-            )
-
-            relative_path = os.path.relpath(output_path, settings.MEDIA_ROOT)
-            output_video = DoctorOutputVideo.objects.create(
-                doctor=doctor,
-                template=template,
-                video_file=relative_path
-            )
-            return Response({'status': 'success', 'message': 'Video regenerated successfully', 'data': DoctorOutputVideoSerializer(output_video).data})
-        except Exception as e:
-            return Response({'error': f'Video generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def regenerate_image(self, doctor, template, content_data):
-        try:
-            image_gen = GenerateImageContentView()
-            output_path = image_gen.generate_image_with_text(template, content_data, doctor)
-            image_content = ImageContent.objects.create(template=template, doctor=doctor, content_data=content_data)
-            with open(output_path, 'rb') as f:
-                image_content.output_image.save(f"regenerated_{image_content.id}.png", File(f), save=True)
-            os.remove(output_path)
-            return Response({'status': 'success', 'message': 'Image regenerated successfully', 'data': ImageContentSerializer(image_content).data})
-        except Exception as e:
-            return Response({'error': f'Image generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-# ------------------------------------------------------------------------------
 # Delete specific content
 # ------------------------------------------------------------------------------
 
@@ -2642,8 +2151,8 @@ class DeleteContentView(APIView):
     def delete(self, request, content_type, content_id):
         try:
             if content_type == 'video':
-                content = DoctorOutputVideo.objects.get(id=content_id)
-                doctor = content.doctor
+                # DoctorOutputVideo model removed - video deletion not supported
+                return Response({'error': 'Video content deletion not supported - model removed'}, status=status.HTTP_400_BAD_REQUEST)
             elif content_type == 'image':
                 content = ImageContent.objects.get(id=content_id)
                 doctor = content.doctor
@@ -2662,8 +2171,9 @@ class DeleteContentView(APIView):
 
             content.delete()
             return Response({'status': 'success', 'message': f'{content_type.title()} deleted successfully'})
-        except (DoctorOutputVideo.DoesNotExist, ImageContent.DoesNotExist):
-            return Response({'error': 'Content not found'}, status=status.HTTP_404_NOT_FOUND)
+        except ImageContent.DoesNotExist:
+                    return Response({'error': 'Content not found'}, status=status.HTTP_404_NOT_FOUND)
+        # DoctorOutputVideo.DoesNotExist removed - model doesn't exist
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -2696,27 +2206,41 @@ class BrandListAPIView(generics.ListAPIView):
             'total_brands': brands.count()
         })
 
-class ImageTemplateUsageView(APIView):
-    # throttle_classes = [BurstRateThrottle]
-    
-    
+class ImageTemplateUsageView(APIView):  
     def get(self, request):
-        # Optimized single query with aggregation
+        # Enhanced query with per-doctor usage counts
         template_data = ImageContent.objects.select_related('template', 'doctor').values(
             'template__id', 'template__name'
         ).annotate(
-            usage_count=Count('id'),
-            doctor_names=ArrayAgg('doctor__name', distinct=True)
+            usage_count=Count('id')
         ).filter(
             template__id__isnull=False
         ).order_by('-usage_count')
         
-        data = [{
-            "template_id": item["template__id"],
-            "template_name": item["template__name"],
-            "usage_count": item["usage_count"],
-            "doctor_names": [name for name in (item["doctor_names"] or []) if name]
-        } for item in template_data]
+        data = []
+        for item in template_data:
+            # Get detailed doctor usage for this template
+            doctor_usage = ImageContent.objects.filter(
+                template_id=item["template__id"]
+            ).values('doctor__name').annotate(
+                count=Count('id')
+            ).order_by('-count')
+            
+            doctor_details = [
+                {
+                    "name": usage["doctor__name"],
+                    "usage_count": usage["count"]
+                }
+                for usage in doctor_usage if usage["doctor__name"]
+            ]
+            
+            data.append({
+                "template_id": item["template__id"],
+                "template_name": item["template__name"],
+                "usage_count": item["usage_count"],
+                "doctor_names": [doc["name"] for doc in doctor_details],
+                "doctor_details": doctor_details  # NEW: detailed usage per doctor
+            })
         
         return Response(data, status=status.HTTP_200_OK)
     
@@ -2759,3 +2283,71 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def test_cors(request):
     return JsonResponse({"status": "CORS working", "method": request.method})
+
+class DoctorUsageHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        doctor_id = request.GET.get('doctor_id')
+        employee_id = request.GET.get('employee_id')
+        
+        if doctor_id:
+            # Get usage history for specific doctor
+            history = DoctorUsageHistory.objects.filter(
+                doctor_id=doctor_id,
+                content_type='image'
+            ).select_related('employee', 'template')
+            
+            return Response([{
+                'employee_name': f"{h.employee.first_name} {h.employee.last_name}",
+                'employee_id': h.employee.employee_id,
+                'template_name': h.template.name,
+                'generated_at': h.generated_at,
+                'is_current_employee': h.employee.employee_id == employee_id
+            } for h in history])
+        
+        return Response([])
+class SharedDoctorsView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        employee_id = request.GET.get('employee_id')
+        
+        if not employee_id:
+            return Response({"error": "employee_id required"}, status=400)
+        
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+        except Employee.DoesNotExist:
+            return Response({"error": "Employee not found"}, status=404)
+        
+        # Get doctors used by this employee but created by others
+        used_doctors = DoctorUsageHistory.objects.filter(
+            employee=employee,
+            content_type='image'
+        ).exclude(
+            doctor__employee=employee
+        ).select_related('doctor', 'doctor__employee').values('doctor').distinct()
+        
+        # Get unique doctor IDs
+        doctor_ids = [usage['doctor'] for usage in used_doctors]
+        unique_doctors = DoctorVideo.objects.filter(id__in=doctor_ids)
+        
+        doctors_data = []
+        for doctor in unique_doctors:
+            doctors_data.append({
+                'id': doctor.id,
+                'name': doctor.name,
+                'mobile_number': doctor.mobile_number,
+                'original_employee': f"{doctor.employee.first_name} {doctor.employee.last_name}",
+                'last_used': DoctorUsageHistory.objects.filter(
+                    doctor=doctor,
+                    employee=employee
+                ).latest('generated_at').generated_at,
+                'usage_count': DoctorUsageHistory.objects.filter(
+                    doctor=doctor,
+                    employee=employee
+                ).count()
+            })
+        
+        return Response(doctors_data)

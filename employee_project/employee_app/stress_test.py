@@ -39,23 +39,10 @@ class ConcurrentImageTester:
         self.test_brands = [1, 2]  # Your brand IDs
         
     async def get_test_data(self):
-        """Fetch actual doctors from your API for testing"""
-        async with aiohttp.ClientSession() as session:
-            try:
-                # Get some doctors for testing
-                async with session.get(f"{self.base_url}/api/doctors/?page=1") as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        self.test_doctors = [doc['id'] for doc in data.get('results', [])[:10]]
-                        print(f"Found {len(self.test_doctors)} doctors for testing")
-                    else:
-                        print(f"Failed to fetch doctors: {response.status}")
-                        # Fallback test data
-                        self.test_doctors = list(range(1, 21))
-            except Exception as e:
-                print(f"Error fetching test data: {e}")
-                # Fallback test data
-                self.test_doctors = list(range(1, 21))
+        """Setup test data without API calls"""
+        # Use hardcoded test data to avoid authentication issues
+        self.test_doctors = list(range(1, 21))  # Will create new doctors as needed
+        print(f"Using {len(self.test_doctors)} test doctor IDs")
 
     async def generate_single_image(self, session: aiohttp.ClientSession, request_id: int) -> TestResult:
         """Generate a single image and track performance"""
@@ -68,12 +55,14 @@ class ConcurrentImageTester:
         
         payload = {
             "template_id": template_id,
-            "doctor_id": doctor_id,
+            "name": f"Test Doctor {request_id}",
+            "mobile": f"12345{request_id:05d}",  # Unique mobile numbers
+            "employee_id": "EMP001",  # Your created employee
             "selected_brands": selected_brands,
             "content_data": {
                 "doctor_name": f"Test Doctor {request_id}",
                 "doctor_clinic": f"Test Clinic {request_id}",
-                "doctor_city": "Test City",
+                "doctor_city": "Test City", 
                 "doctor_state": "Test State",
                 "doctor_specialization": "Test Specialization"
             }
@@ -97,7 +86,7 @@ class ConcurrentImageTester:
                     end_time=end_time,
                     duration=duration,
                     status_code=response.status,
-                    success=response.status == 201,
+                    success=response.status in [200, 201],
                     task_id=task_id
                 )
                 

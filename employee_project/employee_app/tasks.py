@@ -16,7 +16,7 @@ if not django.apps.apps.ready:
     django.setup()
 
 # Import models after Django setup
-from .models import VideoTemplates, DoctorVideo, ImageContent, Brand
+from .models import VideoTemplates, DoctorVideo, ImageContent, Brand,DoctorUsageHistory
 
 def parse_css_shadow(shadow_str):
     """Parse CSS-like text-shadow: '2px 2px 4px rgba(0,0,0,0.7)' -> dict or None"""
@@ -50,7 +50,7 @@ def parse_css_shadow(shadow_str):
     return {'offset_x': 2, 'offset_y': 2, 'color': (128, 128, 128)}
 
 @shared_task(bind=True, max_retries=2, default_retry_delay=60)
-def generate_image_async(self, template_id, doctor_id, content_data, selected_brand_ids=None):
+def generate_image_async(self, template_id, doctor_id, content_data, selected_brand_ids=None, current_employee_id=None):
     """Generate image in background with doctor data and brands"""
     logger.info(f"Starting async image generation for template {template_id}, doctor {doctor_id}")
     
@@ -59,8 +59,17 @@ def generate_image_async(self, template_id, doctor_id, content_data, selected_br
         template = VideoTemplates.objects.get(id=template_id, template_type='image')
         doctor = DoctorVideo.objects.get(id=doctor_id)
         
+        # Get the current employee who is generating content
+        if current_employee_id:
+            from .models import Employee
+            current_employee = Employee.objects.get(employee_id=current_employee_id)
+        else:
+            current_employee = doctor.employee  # Fallback to doctor's owner
+
         logger.info(f"Processing doctor: {doctor.name}")
         logger.info(f"Using template: {template.name}")
+        logger.info(f"Current employee generating content: {current_employee.employee_id}")
+
         
         # Generate the image using the existing function logic
         output_path = generate_image_with_text(
@@ -76,6 +85,24 @@ def generate_image_async(self, template_id, doctor_id, content_data, selected_br
             doctor=doctor,
             content_data=content_data
         )
+
+        # Track usage history
+        # Track usage history - prevent duplicates
+        from .models import DoctorUsageHistory
+        usage_history, created = DoctorUsageHistory.objects.get_or_create(
+            doctor=doctor,
+            employee=current_employee,
+            template=template,
+            content_type='image',
+            defaults={'image_content': image_content}
+        )
+
+        if created:
+            logger.info(f"Created usage history: Doctor {doctor.name} used by employee {current_employee.employee_id}")
+        else:
+            logger.info(f"Usage history already exists for Doctor {doctor.name} and employee {current_employee.employee_id}")
+
+            logger.info(f"Created usage history: Doctor {doctor.name} used by employee {current_employee.employee_id}")
         
         # Save the generated image
         with open(output_path, 'rb') as f:
@@ -120,20 +147,12 @@ def generate_image_with_text(template, content_data, doctor, selected_brand_ids=
     
     try:
         template_image = Image.open(template.template_image.path)
-        
-        # Limit image size to prevent memory issues - MOVE THIS UP
-        max_size = (2048, 2048)
-        if template_image.size[0] > max_size[0] or template_image.size[1] > max_size[1]:
-            template_image.thumbnail(max_size, Image.Resampling.LANCZOS)
+
             
         # Convert to RGB if needed to reduce memory
         if template_image.mode not in ('RGB', 'RGBA'):
             template_image = template_image.convert('RGB')
-        
-        # Limit image size to prevent memory issues
-        max_size = (2048, 2048)
-        if template_image.size[0] > max_size[0] or template_image.size[1] > max_size[1]:
-            template_image.thumbnail(max_size, Image.Resampling.LANCZOS)
+
         
         draw = ImageDraw.Draw(template_image)
         
@@ -206,7 +225,7 @@ def generate_image_with_text(template, content_data, doctor, selected_brand_ids=
         }
 
         # DOCTOR FIELDS RESPONSIVE CENTER ALIGNMENT (removed 'state' since it's now combined with city)
-        doctor_fields = ['name', 'specialization', 'clinic', 'city']
+        doctor_fields = ['name', 'specialization', 'city']
         doctor_text_data = {field: all_text_data[field] for field in doctor_fields if field in all_text_data and all_text_data[field] and field in positions}
 
         if doctor_text_data:
@@ -429,13 +448,20 @@ def generate_image_with_text(template, content_data, doctor, selected_brand_ids=
         output_path = os.path.join(output_dir, f"temp_image_{uuid.uuid4().hex}.png")
         
         # Convert to RGB before saving to ensure compatibility
+        # Convert to RGB before saving with high quality
+        # Save with transparency preserved - DON'T convert to RGB
         if template_image.mode == 'RGBA':
-            # Create white background and paste RGBA image on it
-            rgb_image = Image.new('RGB', template_image.size, (255, 255, 255))
-            rgb_image.paste(template_image, mask=template_image.split()[-1])
-            rgb_image.save(output_path)
+            template_image.save(output_path, 'PNG', 
+                            quality=100, 
+                            optimize=False, 
+                            compress_level=0,
+                            dpi=(600, 600))
         else:
-            template_image.save(output_path)
+            template_image.save(output_path, 'PNG', 
+                            quality=100, 
+                            optimize=False, 
+                            compress_level=0,
+                            dpi=(300, 300))
         
         return output_path
     
@@ -491,30 +517,88 @@ def render_brands_in_area(template_image, brands, area_settings):
     print(f"Available slots: {len(slots)}")
     
     # Get only the slots we need (based on number of brands)
+    # Get only the slots we need (based on number of brands) - SELECT MIDDLE SLOTS FOR CENTERING
+    # Get only the slots we need (based on number of brands) - SELECT MIDDLE SLOTS FOR CENTERING
     brands_list = list(brands)
-    needed_slots = slots[:len(brands_list)]
-    
+    total_slots = len(slots)
+    brands_count = len(brands_list)
+
+    if brands_count < total_slots:
+    # Grid-aware centering: assume 3x3 grid layout (9 slots)
+        if total_slots == 9:
+            rows = [slots[0:3], slots[3:6], slots[6:9]]  # Row 1, Row 2, Row 3
+            needed_slots = []
+            remaining_brands = brands_count
+            
+            for row_idx, row_slots in enumerate(rows):
+                if remaining_brands <= 0:
+                    break
+                    
+                brands_in_this_row = min(3, remaining_brands)
+                
+                if brands_in_this_row == 3:
+                    # Fill entire row - no centering needed
+                    needed_slots.extend(row_slots)
+                    print(f"Row {row_idx+1}: Using all 3 slots")
+                elif brands_in_this_row == 2:
+                    # Center 2 brands in row - move them much closer to center
+                    slot1 = row_slots[0].copy()
+                    slot2 = row_slots[2].copy()
+                    
+                    # Calculate the total width of the row
+                    row_start = row_slots[0]['x']
+                    row_end = row_slots[2]['x'] + row_slots[2]['width']
+                    row_width = row_end - row_start
+                    
+                    # Position brands closer together in the center
+                    brand_spacing = row_slots[0]['width'] + 50  # 50px gap between brands
+                    centered_start_x = row_start + (row_width - (2 * row_slots[0]['width'] + 50)) // 2
+                    
+                    slot1['x'] = centered_start_x
+                    slot2['x'] = centered_start_x + row_slots[0]['width'] + 50
+                    
+                    needed_slots.extend([slot1, slot2])
+                    print(f"Row {row_idx+1}: Centering 2 brands at x={centered_start_x} and x={slot2['x']}")
+                elif brands_in_this_row == 1:
+                    # Center 1 brand in row (use middle slot)
+                    needed_slots.append(row_slots[1])
+                    print(f"Row {row_idx+1}: Centering 1 brand (middle slot)")
+                
+                remaining_brands -= brands_in_this_row
+            
+            print(f"Grid centering complete: {len(needed_slots)} slots selected for {brands_count} brands")
+        else:
+            # Fallback for non-9-slot layouts
+            needed_slots = slots[:brands_count]
+            print(f"Non-grid layout: using first {brands_count} slots")
+    else:
+        needed_slots = slots[:brands_count]    
     print(f"Using {len(needed_slots)} slots for {len(brands_list)} brands")
     
     # Calculate bounding box of needed slots for centering
-    if len(needed_slots) < len(slots):
-        min_x = min(slot['x'] for slot in needed_slots)
-        max_x = max(slot['x'] + slot['width'] for slot in needed_slots)
-        min_y = min(slot['y'] for slot in needed_slots)
-        max_y = max(slot['y'] + slot['height'] for slot in needed_slots)
-        
-        used_width = max_x - min_x
-        used_height = max_y - min_y
-        
-        # Calculate centering offset
-        center_offset_x = (area_width - used_width) // 2 - min_x
-        center_offset_y = (area_height - used_height) // 2 - min_y
-        
-        print(f"Centering offset: ({center_offset_x}, {center_offset_y})")
-    else:
-        # Using all slots, no centering needed
+    # Skip global centering when using grid-aware centering
+    if total_slots == 9 and brands_count < total_slots:
+        # Grid-aware centering already handled positioning
         center_offset_x = 0
         center_offset_y = 0
+        print("Skipping global centering - using grid-aware positioning")
+    else:
+        # Use original global centering for non-grid layouts
+        if len(needed_slots) < len(slots):
+            min_x = min(slot['x'] for slot in needed_slots)
+            max_x = max(slot['x'] + slot['width'] for slot in needed_slots)
+            min_y = min(slot['y'] for slot in needed_slots)
+            max_y = max(slot['y'] + slot['height'] for slot in needed_slots)
+            
+            used_width = max_x - min_x
+            used_height = max_y - min_y
+            
+            center_offset_x = (area_width - used_width) // 2 - min_x
+            center_offset_y = (area_height - used_height) // 2 - min_y
+            print(f"Global centering offset: ({center_offset_x}, {center_offset_y})")
+        else:
+            center_offset_x = 0
+            center_offset_y = 0
     
     # Render brands in slots
     for i, (brand, slot) in enumerate(zip(brands_list, needed_slots)):
@@ -539,30 +623,75 @@ def render_brands_in_area(template_image, brands, area_settings):
                         continue
                         
                     brand_img = Image.open(brand.brand_image.path)
-
-                    # Check image size before processing
-                    if brand_img.size[0] > 1000 or brand_img.size[1] > 1000:
-                        brand_img.thumbnail((1000, 1000), Image.Resampling.LANCZOS)
+                    # DEBUG: Check brand image properties
+                    print(f"🔍 Brand {brand.name}:")
+                    print(f"  - Mode: {brand_img.mode}")
+                    print(f"  - Size: {brand_img.size}")
+                    print(f"  - Has transparency: {brand_img.mode in ('RGBA', 'LA') or 'transparency' in brand_img.info}")
+                    if brand_img.mode == 'RGBA':
+                        # Check if image actually uses transparency
+                        alpha = brand_img.split()[-1]
+                        alpha_range = alpha.getextrema()
+                        print(f"  - Alpha range: {alpha_range}")
+                        print(f"  - Has real transparency: {alpha_range[0] < 255}")
 
                     # Convert to RGB safely
-                    if brand_img.mode != 'RGB':
-                        try:
-                            rgb_img = Image.new('RGB', brand_img.size, (255, 255, 255))
-                            rgb_img.paste(brand_img.convert('RGBA'), (0, 0))
-                            brand_img.close()
-                            brand_img = rgb_img
-                        except Exception as e:
-                            logger.warning(f"Image conversion failed for {brand.name}: {e}")
-                            brand_img = brand_img.convert('RGB')
+                    # Keep transparency for brand images - DON'T convert to RGB
+                    # Force RGBA mode to ensure transparency support
+                    if brand_img.mode != 'RGBA':
+                        if brand_img.mode == 'P' and 'transparency' in brand_img.info:
+                            # Handle palette mode with transparency
+                            brand_img = brand_img.convert('RGBA')
+                        elif brand_img.mode in ('L', 'LA'):
+                            # Handle grayscale with alpha
+                            brand_img = brand_img.convert('RGBA')
+                        else:
+                            # Convert other modes to RGBA
+                            brand_img = brand_img.convert('RGBA')
+
+                    print(f"🔍 After conversion - Mode: {brand_img.mode}")
+                    # Don't force RGB conversion - preserve transparency
                     
                     # Resize brand image
-                    brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
+                    # brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
+
+                    # Resize brand image with better quality
+                    original_ratio = brand_img.width / brand_img.height
+                    slot_ratio = slot_width / slot_height
+
+                    if original_ratio > slot_ratio:
+                        # Image is wider - fit by width
+                        new_width = slot_width
+                        new_height = int(slot_width / original_ratio)
+                    else:
+                        # Image is taller - fit by height
+                        new_height = slot_height
+                        new_width = int(slot_height * original_ratio)
+
+                    # Resize with high quality
+                    brand_img = brand_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+                    # Center the image in the slot if needed
+                    # Center the image in the slot with transparent background
+                    if new_width != slot_width or new_height != slot_height:
+                        centered_img = Image.new('RGBA', (slot_width, slot_height), (0, 0, 0, 0))  # Fully transparent
+                        paste_x = (slot_width - new_width) // 2
+                        paste_y = (slot_height - new_height) // 2
+                        if brand_img.mode == 'RGBA':
+                            centered_img.paste(brand_img, (paste_x, paste_y), brand_img)  # Use alpha mask
+                        else:
+                            centered_img.paste(brand_img, (paste_x, paste_y))
+                        brand_img = centered_img
                     
                     # Paste brand image
+                    # Paste brand image with proper alpha handling
                     if template_image.mode != 'RGBA':
                         template_image = template_image.convert('RGBA')
-                    
-                    template_image.paste(brand_img, (final_x, final_y))
+
+                    if brand_img.mode == 'RGBA':
+                        template_image.paste(brand_img, (final_x, final_y), brand_img)  # Use alpha mask
+                    else:
+                        template_image.paste(brand_img, (final_x, final_y))
                     
                 except (IOError, OSError) as e:
                     logger.warning(f"Failed to process brand image {brand.id}: {e}")

@@ -13,7 +13,7 @@
 
 #! Prathamesh
 from django.contrib import admin
-from .models import Employee, EmployeeLoginHistory, DoctorVideo, Doctor, VideoTemplates, DoctorOutputVideo, ImageContent, Brand
+from .models import Employee, EmployeeLoginHistory, DoctorVideo, VideoTemplates, ImageContent, Brand
 
 # Employee Admin
 @admin.register(Employee)
@@ -59,33 +59,7 @@ class EmployeeLoginHistoryAdmin(admin.ModelAdmin):
     )
 
 
-# Doctor Admin
-@admin.register(Doctor)
-class DoctorAdmin(admin.ModelAdmin):
-    list_display = ['name', 'specialization', 'clinic', 'city', 'state', 'employee', 'has_output_video']
-    list_filter = ['specialization', 'city', 'state', 'employee']
-    search_fields = ['name', 'clinic', 'city', 'specialization', 'mobile_number']
-    ordering = ['name']
-    
-    fieldsets = (
-        ('Doctor Information', {
-            'fields': ('name', 'designation', 'specialization', 'image')
-        }),
-        ('Practice Details', {
-            'fields': ('clinic', 'city', 'state', 'description')
-        }),
-        ('Contact Information', {
-            'fields': ('mobile_number', 'whatsapp_number')
-        }),
-        ('System Data', {
-            'fields': ('employee', 'output_video')
-        }),
-    )
-    
-    def has_output_video(self, obj):
-        return bool(obj.output_video)
-    has_output_video.boolean = True
-    has_output_video.short_description = 'Has Video'
+
 
 
 # DoctorVideo Admin
@@ -163,38 +137,6 @@ class VideoTemplatesAdmin(admin.ModelAdmin):
         return bool(obj.brand_area_settings and obj.brand_area_settings.get('enabled', False))
     has_brand_area.boolean = True
     has_brand_area.short_description = 'Has Brand Area'
-
-# DoctorOutputVideo Admin
-@admin.register(DoctorOutputVideo)
-class DoctorOutputVideoAdmin(admin.ModelAdmin):
-    list_display = ['id', 'doctor_name', 'template_name', 'created_at', 'has_video_file']
-    list_filter = ['template__name', 'created_at', 'doctor__employee']
-    search_fields = ['doctor__name', 'template__name', 'doctor__clinic']
-    ordering = ['-created_at']
-    readonly_fields = ['created_at']
-    
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('doctor', 'template', 'created_at')
-        }),
-        ('Generated Output', {
-            'fields': ('video_file',)
-        }),
-    )
-    
-    def doctor_name(self, obj):
-        return obj.doctor.name if obj.doctor else 'N/A'
-    doctor_name.short_description = 'Doctor'
-    
-    def template_name(self, obj):
-        return obj.template.name if obj.template else 'N/A'
-    template_name.short_description = 'Template'
-    
-    def has_video_file(self, obj):
-        return bool(obj.video_file)
-    has_video_file.boolean = True
-    has_video_file.short_description = 'Has Video'
-
 
 # ImageContent Admin (New)
 @admin.register(ImageContent)

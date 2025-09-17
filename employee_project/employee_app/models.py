@@ -78,30 +78,6 @@ class DoctorVideo(models.Model):
             models.Index(fields=['created_at', 'employee']),  # For pagination
             models.Index(fields=['name', 'specialization']),  # For search
         ]
-    
-
-class Doctor(models.Model):
-    name = models.CharField(max_length=255)
-    designation = models.CharField(max_length=255)
-    clinic = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100,null=True, blank=True)
-    image = models.ImageField(upload_to='doctor_images/', blank=True, null=True)
-    specialization = models.CharField(max_length=255)
-    mobile_number = models.CharField(max_length=15)
-    whatsapp_number = models.CharField(max_length=15)
-    description = models.TextField()
-    output_video = models.FileField(upload_to='doctor_videos/', blank=True, null=True)
-    employee = models.ForeignKey(Employee,  on_delete=models.CASCADE, related_name='doctors',null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.name} - {self.specialization}"
-
-@property
-def video_url(self):
-    if self.output_video:
-        return f"https://vibecopilot.ai{self.output_video.url}"
-    return None
 
 
 class VideoTemplates(models.Model):
@@ -196,17 +172,6 @@ def doctor_video_upload_path(instance, filename):
     doctor_id = instance.doctor.id if instance.doctor else 'unknown_doctor'
     return os.path.join('output', str(employee_id), str(doctor_id), filename)
 
-class DoctorOutputVideo(models.Model):
-
-    doctor = models.ForeignKey(DoctorVideo, on_delete=models.CASCADE, null=True, blank=True, related_name='doctor_videos')
-    template = models.ForeignKey(VideoTemplates, on_delete=models.SET_NULL,null=True,blank=True)
-    video_file = models.FileField(upload_to=doctor_video_upload_path)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-    def __str__(self):
-        return f"Video for {self.doctor_video.name} - {self.id}"
-    
 
 
 class Brand(models.Model):
@@ -233,3 +198,15 @@ class Brand(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
+    
+
+class DoctorUsageHistory(models.Model):
+    doctor = models.ForeignKey(DoctorVideo, on_delete=models.CASCADE, related_name='usage_history')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    template = models.ForeignKey(VideoTemplates, on_delete=models.CASCADE)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    content_type = models.CharField(max_length=20, default='image')  # image/video
+    image_content = models.ForeignKey(ImageContent, on_delete=models.CASCADE, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-generated_at']

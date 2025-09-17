@@ -15,10 +15,12 @@ CSRF_COOKIE_SECURE = True
 
 # Production database with connection pooling
 DATABASES['default'].update({
-    'CONN_MAX_AGE': 300,
+    'CONN_MAX_AGE': 60,  # Shorter connection age
     'OPTIONS': {
-        'MAX_CONNS': 50,
-        'MIN_CONNS': 10,
+        'MAX_CONNS': 20,   # Reduced from 50
+        'MIN_CONNS': 5,    # Reduced from 10
+        'connect_timeout': 5,
+        'sslmode': 'prefer',
     }
 })
 

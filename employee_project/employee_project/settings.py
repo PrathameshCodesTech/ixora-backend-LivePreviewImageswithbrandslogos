@@ -41,7 +41,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
-        'CONN_MAX_AGE': 300,  # 5 minutes
+        'CONN_MAX_AGE': 60,
         'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'connect_timeout': 10,
@@ -52,13 +52,6 @@ DATABASES = {
         }
     }
 }
-
-# Database connection pooling for production
-if not DEBUG:
-    DATABASES['default']['OPTIONS'].update({
-        'MAX_CONNS': 100,
-        'MIN_CONNS': 10,
-    })
 
 # Application definition
 INSTALLED_APPS = [
@@ -151,6 +144,7 @@ CELERY_TASK_MAX_RETRIES = 2
 CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_TASK_SEND_SENT_EVENT = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 50
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
