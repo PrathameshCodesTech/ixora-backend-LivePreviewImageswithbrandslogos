@@ -31,12 +31,12 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django_ratelimit.decorators import ratelimit
+#from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
-from django_ratelimit.decorators import ratelimit
+#from django_ratelimit.decorators import ratelimit
 import psutil
 import threading
-import time  
+import time
 from django.db import models
 from django.core.cache import cache
 
@@ -45,14 +45,14 @@ def monitor_resources(func):
     def wrapper(*args, **kwargs):
         start_memory = psutil.virtual_memory().percent
         start_time = time.time()
-        
+
         try:
             result = func(*args, **kwargs)
             return result
         finally:
             end_memory = psutil.virtual_memory().percent
             duration = time.time() - start_time
-            
+
             # Log if resource usage is high
             if end_memory - start_memory > 10 or duration > 30:
                 logger.warning(f"High resource usage in {func.__name__}: "
@@ -63,20 +63,20 @@ def monitor_resources(func):
 
 
 from django.core.cache import cache
-from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+#from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
-class BurstRateThrottle(UserRateThrottle):
-    scope = 'burst'
-    rate = '30/min'  # Reduced from 60 to prevent spam
-
-class SustainedRateThrottle(UserRateThrottle):
-    scope = 'sustained'
-    rate = '1000/day'  # Keep this - reasonable daily limit
-
-class MediaGenerationThrottle(UserRateThrottle):
-    scope = 'media_generation'
-    rate = '500/hour'  # Increased from 10 to 500 - much more user-friendly
-
+#class BurstRateThrottle(UserRateThrottle):
+#    scope = 'burst'
+#    rate = '30/min'  # Reduced from 60 to prevent spam
+#
+#class SustainedRateThrottle(UserRateThrottle):
+#    scope = 'sustained'
+#    rate = '1000/day'  # Keep this - reasonable daily limit
+#
+#class MediaGenerationThrottle(UserRateThrottle):
+#    scope = 'media_generation'
+#    rate = '500/hour'  # Increased from 10 to 500 - much more user-friendly
+#
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -88,8 +88,8 @@ from .models import (
     VideoTemplates,
     ImageContent,
     Brand,
-    DoctorUsageHistory
-    
+    # DoctorUsageHistory
+
 )
 
 from .serializers import (
@@ -101,7 +101,7 @@ from .serializers import (
     ImageContentSerializer,
     ImageTemplateSerializer,
     BrandSerializer,
-    
+
 )
 import psutil
 import os
@@ -110,7 +110,7 @@ from celery import current_app
 
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         """System health check for monitoring"""
         health_data = {
@@ -118,9 +118,9 @@ class HealthCheckView(APIView):
             "timestamp": timezone.now().isoformat(),
             "checks": {}
         }
-        
+
         overall_status = True
-        
+
         # Database check
         try:
             from django.db import connection
@@ -130,10 +130,10 @@ class HealthCheckView(APIView):
         except Exception as e:
             health_data["checks"]["database"] = {"status": "error", "message": str(e)}
             overall_status = False
-        
+
         # Cache check
         health_data["checks"]["cache"] = {"status": "disabled", "message": "Cache not in use"}
-        
+
         # Celery check
         try:
             inspector = current_app.control.inspect()
@@ -144,7 +144,7 @@ class HealthCheckView(APIView):
                 health_data["checks"]["celery"] = {"status": "warning", "message": "no active workers"}
         except Exception as e:
             health_data["checks"]["celery"] = {"status": "error", "message": str(e)}
-        
+
         # Disk space check
         try:
             disk_usage = psutil.disk_usage(settings.MEDIA_ROOT)
@@ -155,7 +155,7 @@ class HealthCheckView(APIView):
                 health_data["checks"]["disk"] = {"status": "ok", "free_percent": round(free_percent, 2)}
         except Exception as e:
             health_data["checks"]["disk"] = {"status": "error", "message": str(e)}
-        
+
         # Memory check
         try:
             memory = psutil.virtual_memory()
@@ -166,10 +166,10 @@ class HealthCheckView(APIView):
                 health_data["checks"]["memory"] = {"status": "ok", "usage_percent": memory.percent}
         except Exception as e:
             health_data["checks"]["memory"] = {"status": "error", "message": str(e)}
-        
+
         health_data["status"] = "healthy" if overall_status else "unhealthy"
         status_code = status.HTTP_200_OK if overall_status else status.HTTP_503_SERVICE_UNAVAILABLE
-        
+
 # Celery task
 try:
     from employee_app.tasks import generate_custom_video_task
@@ -198,7 +198,7 @@ from celery import current_app
 
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]
-    
+
     def get(self, request):
         """System health check for monitoring"""
         health_data = {
@@ -206,9 +206,9 @@ class HealthCheckView(APIView):
             "timestamp": timezone.now().isoformat(),
             "checks": {}
         }
-        
+
         overall_status = True
-        
+
         # Database check
         try:
             from django.db import connection
@@ -218,7 +218,7 @@ class HealthCheckView(APIView):
         except Exception as e:
             health_data["checks"]["database"] = {"status": "error", "message": str(e)}
             overall_status = False
-        
+
         # Cache check
         try:
             cache.set("health_check", "ok", 10)
@@ -230,7 +230,7 @@ class HealthCheckView(APIView):
         except Exception as e:
             health_data["checks"]["cache"] = {"status": "error", "message": str(e)}
             overall_status = False
-        
+
         # Celery check
         try:
             inspector = current_app.control.inspect()
@@ -241,7 +241,7 @@ class HealthCheckView(APIView):
                 health_data["checks"]["celery"] = {"status": "warning", "message": "no active workers"}
         except Exception as e:
             health_data["checks"]["celery"] = {"status": "error", "message": str(e)}
-        
+
         # Disk space check
         try:
             disk_usage = psutil.disk_usage(settings.MEDIA_ROOT)
@@ -252,7 +252,7 @@ class HealthCheckView(APIView):
                 health_data["checks"]["disk"] = {"status": "ok", "free_percent": round(free_percent, 2)}
         except Exception as e:
             health_data["checks"]["disk"] = {"status": "error", "message": str(e)}
-        
+
         # Memory check
         try:
             memory = psutil.virtual_memory()
@@ -263,29 +263,29 @@ class HealthCheckView(APIView):
                 health_data["checks"]["memory"] = {"status": "ok", "usage_percent": memory.percent}
         except Exception as e:
             health_data["checks"]["memory"] = {"status": "error", "message": str(e)}
-        
+
         health_data["status"] = "healthy" if overall_status else "unhealthy"
         status_code = status.HTTP_200_OK if overall_status else status.HTTP_503_SERVICE_UNAVAILABLE
-        
+
         return Response(health_data, status=status_code)
 @api_view(['GET'])
 def system_metrics(request):
     """Detailed system metrics for monitoring"""
     try:
         import psutil
-        
+
         # Memory metrics
         memory = psutil.virtual_memory()
-        
+
         # Disk metrics
         disk = psutil.disk_usage(settings.MEDIA_ROOT)
-        
+
         # CPU metrics
         cpu_percent = psutil.cpu_percent(interval=1)
-        
+
         # Active connections
         connections = len(psutil.net_connections())
-        
+
         # Celery metrics
         try:
             from celery import current_app
@@ -294,7 +294,7 @@ def system_metrics(request):
             active_count = sum(len(tasks) for tasks in (active_tasks or {}).values())
         except:
             active_count = 0
-        
+
         metrics = {
             "timestamp": timezone.now().isoformat(),
             "memory": {
@@ -310,9 +310,9 @@ def system_metrics(request):
             "active_connections": connections,
             "active_celery_tasks": active_count
         }
-        
+
         return Response(metrics)
-        
+
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
@@ -338,25 +338,25 @@ def validate_file_upload(file):
     """Validate uploaded files for security"""
     if not file:
         raise ValidationError("No file provided")
-    
+
     if file.size > MAX_FILE_SIZE:
         raise ValidationError(f"File too large. Maximum size is {MAX_FILE_SIZE/1024/1024}MB")
-    
+
     # Additional size check for images
     if file.content_type and file.content_type.startswith('image/'):
         if file.size > 5 * 1024 * 1024:  # 5MB for images
             raise ValidationError("Image files must be under 5MB")
-    
+
     # Check MIME type
     mime_type, _ = mimetypes.guess_type(file.name)
     if mime_type not in ALLOWED_IMAGE_TYPES + ALLOWED_VIDEO_TYPES:
         raise ValidationError("Invalid file type")
-    
+
     # Check file extension
     allowed_extensions = ['.jpg', '.jpeg', '.png', '.mp4', '.avi', '.mov']
     if not any(file.name.lower().endswith(ext) for ext in allowed_extensions):
         raise ValidationError("Invalid file extension")
-    
+
     return True
 
 # ------------------------------------------------------------------------------
@@ -426,7 +426,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
 def get_tokens_for_employee(employee):
     from django.contrib.auth.models import User
-    
+
     # Create or get a Django User for this employee
     user, created = User.objects.get_or_create(
         username=employee.employee_id,
@@ -436,7 +436,7 @@ def get_tokens_for_employee(employee):
             'last_name': employee.last_name or ''
         }
     )
-    
+
     refresh = RefreshToken.for_user(user)
     refresh.access_token.set_exp(lifetime=timedelta(hours=1))
     return {
@@ -503,7 +503,7 @@ def employee_login_api(request):
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
-# @ratelimit(key='ip', rate='20/m', method='POST', block=True)
+# #@ratelimit(key='ip', rate='20/m', method='POST', block=True)
 def add_doctor(request):
     # Validate uploaded files
     if 'image' in request.FILES:
@@ -511,7 +511,7 @@ def add_doctor(request):
             validate_file_upload(request.FILES['image'])
         except ValidationError as e:
             return Response({'status': 'error', 'errors': {'image': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     serializer = DoctorSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -566,21 +566,21 @@ class VideoGenViewSet(viewsets.ModelViewSet):
         # Video generation disabled - only saving doctor data
 
 
-    
+
 class DoctorVideoViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DoctorVideoSerializer
     pagination_class = Pagination_class
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [AllowAny]
+
     def get_queryset(self):
         employee_id = self.request.query_params.get('employee_id')
         user_type = self.request.query_params.get('user_type')
         search = self.request.query_params.get('search', '')
         specialization = self.request.query_params.get('specialization', '')
-        
+
         if not employee_id:
             return DoctorVideo.objects.none()
-            
+
         # Optimized for image-heavy queries
         if user_type in ["Admin", "SuperAdmin"]:
             doctors = DoctorVideo.objects.select_related('employee').prefetch_related('image_contents__template')
@@ -590,24 +590,24 @@ class DoctorVideoViewSet(viewsets.ReadOnlyModelViewSet):
                 doctors = DoctorVideo.objects.filter(employee=employee).select_related('employee').prefetch_related('image_contents__template')
             except Employee.DoesNotExist:
                 return DoctorVideo.objects.none()
-        
+
         # Apply filters
         if search:
             doctors = doctors.filter(
-                Q(name__icontains=search) | 
+                Q(name__icontains=search) |
                 Q(clinic__icontains=search) |
                 Q(mobile_number__icontains=search)
             )
         if specialization:
             doctors = doctors.filter(specialization__iexact=specialization)
-            
+
         return doctors.order_by('-created_at')
-    
+
 
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser])
-# @ratelimit(key='ip', rate='5/h', method='POST', block=True)
+# #@ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def bulk_upload_employees(request):
     excel_file = request.FILES.get('file')
     if not excel_file:
@@ -668,107 +668,100 @@ def bulk_upload_employees(request):
 
 
 # class DoctorListByEmployee(APIView):
-#     permission_classes = [IsAuthenticated]
-    
+#     permission_classes = [AllowAny]
+
 #     def get(self, request):
 #         employee_id = request.GET.get('employee_id')
 #         user_type = request.GET.get('user_type')
 #         search = request.GET.get('search', '')
 #         specialization = request.GET.get('specialization', '')
-        
+
 #         if not employee_id:
 #             return Response({"detail": "employee_id is required."}, status=400)
-        
+
 #         try:
 #             employee = Employee.objects.get(employee_id=employee_id)
 #         except Employee.DoesNotExist:
 #             return Response({"detail": "Employee not found."}, status=404)
-        
+
 #         # Modified logic to include shared doctors
 #         if user_type in ["Admin", "SuperAdmin"]:
 #             doctors = DoctorVideo.objects.all()
 #         else:
 #             # Get doctors owned by this employee
 #             owned_doctors = DoctorVideo.objects.filter(employee=employee)
-            
+
 #             # Get doctors used by this employee (from usage history)
 #             used_doctor_ids = DoctorUsageHistory.objects.filter(
 #                 employee=employee,
 #                 content_type='image'
 #             ).values_list('doctor_id', flat=True).distinct()
-            
+
 #             used_doctors = DoctorVideo.objects.filter(id__in=used_doctor_ids)
-            
+
 #             # Combine both querysets
 #             doctors = (owned_doctors | used_doctors).distinct()
-        
+
 #         # Apply search filters
 #         if search:
 #             doctors = doctors.filter(
-#                 Q(name__icontains=search) | 
+#                 Q(name__icontains=search) |
 #                 Q(clinic__icontains=search)
 #             )
 #         if specialization:
 #             doctors = doctors.filter(specialization__iexact=specialization)
-        
+
 #         doctors = doctors.order_by('-created_at')
 #         paginator = Pagination_class()
 #         page = paginator.paginate_queryset(doctors, request)
 #         serializer = DoctorVideoSerializer(page, many=True)
 #         return paginator.get_paginated_response(serializer.data)
-    
+
 
 class DoctorListByEmployee(APIView):
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [AllowAny]
+
     def get(self, request):
         employee_id = request.GET.get('employee_id')
         user_type = request.GET.get('user_type')
         search = request.GET.get('search', '')
         specialization = request.GET.get('specialization', '')
-        
+
         if not employee_id:
             return Response({"detail": "employee_id is required."}, status=400)
-        
+
         try:
             employee = Employee.objects.get(employee_id=employee_id)
             print(f"Employee found: {employee.first_name} {employee.last_name}")
         except Employee.DoesNotExist:
             return Response({"detail": "Employee not found."}, status=404)
-        
-        # Modified logic to include shared doctors
+
+        # MODIFIED - Employee-specific doctors only (shared doctor functionality commented out)
         if user_type in ["Admin", "SuperAdmin"]:
             doctors = DoctorVideo.objects.all()
             print(f"Admin mode: returning all {doctors.count()} doctors")
         else:
-            # Get doctors owned by this employee
-            owned_doctors = DoctorVideo.objects.filter(employee=employee)
-            print(f"Doctors owned by {employee_id}: {owned_doctors.count()}")
-            
-            # Get doctors used by this employee (from usage history)
-            used_doctor_ids = DoctorUsageHistory.objects.filter(
-                employee=employee,
-                content_type='image'
-            ).values_list('doctor_id', flat=True).distinct()
-            
-            print(f"Doctor IDs used by {employee_id}: {list(used_doctor_ids)}")
-            
-            used_doctors = DoctorVideo.objects.filter(id__in=used_doctor_ids)
-            print(f"Doctors used by {employee_id}: {used_doctors.count()}")
-            
-            # Combine both querysets
-            doctors = (owned_doctors | used_doctors).distinct()
-            print(f"Total doctors {employee_id} should see: {doctors.count()}")
-        
+            # Only get doctors owned by this employee (no shared doctors)
+            doctors = DoctorVideo.objects.filter(employee=employee)
+            print(f"Doctors owned by {employee_id}: {doctors.count()}")
+
+            # COMMENTED OUT - Shared doctor functionality
+            # used_doctor_ids = DoctorUsageHistory.objects.filter(
+            #     employee=employee,
+            #     content_type='image'
+            # ).values_list('doctor_id', flat=True).distinct()
+            # used_doctors = DoctorVideo.objects.filter(id__in=used_doctor_ids)
+            # doctors = (owned_doctors | used_doctors).distinct()
+
         # Apply search filters
         if search:
             doctors = doctors.filter(
-                Q(name__icontains=search) | 
+                Q(name__icontains=search) |
                 Q(clinic__icontains=search)
             )
         if specialization:
             doctors = doctors.filter(specialization__iexact=specialization)
-        
+
         doctors = doctors.order_by('-created_at')
         paginator = Pagination_class()
         page = paginator.paginate_queryset(doctors, request)
@@ -858,7 +851,7 @@ def generate_video_for_doctor(doctor):
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
-# @ratelimit(key='ip', rate='5/h', method='POST', block=True)
+# #@ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def bulk_upload_doctors(request):
     excel_file = request.FILES.get('file')
     if not excel_file:
@@ -1178,20 +1171,20 @@ def update_employees_from_excel(request):
 class TemplateWiseVideoCountView(APIView):
     def get(self, request):
         template_type = request.GET.get('template_type', 'video')  # Add this parameter
-        
+
         if template_type == 'image':
             # Count ImageContent instead of DoctorOutputVideo
             template_counts = ImageContent.objects.values("template__id", "template__name").annotate(content_count=Count("id")).order_by("-content_count")
         else:
             # Video functionality disabled - return empty results
             template_counts = []
-        
+
         data = [{
             "template_id": item["template__id"],
             "template_name": item["template__name"],
             "video_count": item.get("video_count") or item.get("content_count", 0)
         } for item in template_counts if item["template__id"] is not None]
-        
+
         return Response(data, status=status.HTTP_200_OK)
 
 # ------------------------------------------------------------------------------
@@ -1200,7 +1193,7 @@ class TemplateWiseVideoCountView(APIView):
 
 class ImageTemplateAPIView(APIView):
     """Handle image templates separately from video templates"""
-    permission_classes = [AllowAny] 
+    permission_classes = [AllowAny]
     def get(self, request, pk=None):
         if pk:
             template = get_object_or_404(VideoTemplates, pk=pk, template_type='image')
@@ -1243,8 +1236,8 @@ class ImageTemplateAPIView(APIView):
 
 class GenerateImageContentView(APIView):
     """Generate image with text overlay - DoctorVideo only"""
-    throttle_classes = [BurstRateThrottle] 
-    permission_classes = [IsAuthenticated]
+    # #throttle_classes = []
+    permission_classes = [AllowAny]
     @monitor_resources
     def post(self, request):
         # Check system resources before processing
@@ -1258,7 +1251,7 @@ class GenerateImageContentView(APIView):
         except ValidationError as e:
             logger.error(f"Validation error in image generation: {e}")
             return Response({
-                "error": "Invalid input data", 
+                "error": "Invalid input data",
                 "details": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
         except VideoTemplates.DoesNotExist:
@@ -1289,14 +1282,14 @@ class GenerateImageContentView(APIView):
                 validate_file_upload(request.FILES['doctor_image'])
             except ValidationError as e:
                 return Response({"error": f"File validation failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         template_id = request.data.get("template_id")
         doctor_id = request.data.get("doctor_id")
         mobile = request.data.get("mobile")
         name = request.data.get("name")
         content_data = request.data.get("content_data", {})
         selected_brand_ids = request.data.get("selected_brands", [])
-        
+
         # Security: Ensure employee can only create content for themselves (unless admin)
         if doctor_id and user_type not in ["Admin", "SuperAdmin"]:
             try:
@@ -1316,10 +1309,10 @@ class GenerateImageContentView(APIView):
             template = VideoTemplates.objects.select_related().get(id=template_id, template_type='image')
         except VideoTemplates.DoesNotExist:
             return Response({"error": "Image template not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
         print(f"🔍 Template brand_area_settings: {template.brand_area_settings}")
         print(f"🔍 Selected brand IDs: {selected_brand_ids}")
-        
+
 
         # Scenario 1: Existing DoctorVideo by ID
         is_new_doctor = False
@@ -1329,24 +1322,63 @@ class GenerateImageContentView(APIView):
             except DoctorVideo.DoesNotExist:
                 return Response({"error": "Doctor not found."}, status=status.HTTP_404_NOT_FOUND)
         else:
-            # Scenario 2: Find/create by mobile
-            doctor_video = DoctorVideo.objects.select_related('employee').filter(mobile_number=mobile).first()
-            if not doctor_video:
-                # Need an employee
-                # Need an employee
-                try:
-                    employee_id = request.data.get("employee_id")
-                    if employee_id:
-                        employee = Employee.objects.get(employee_id=employee_id)
-                    else:
-                        return Response({"error": "employee_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-                except Employee.DoesNotExist:
-                    return Response({"error": f"Employee {employee_id} not found."}, status=status.HTTP_404_NOT_FOUND)
-                clinic = content_data.get("doctor_clinic") or request.data.get("clinic", "Unknown Clinic")
-                city = content_data.get("doctor_city") or request.data.get("city", "Unknown City")
-                specialization = content_data.get("doctor_specialization") or request.data.get("specialization", "General Medicine")
-                state = content_data.get("doctor_state") or request.data.get("state", "Unknown State")
+            # Scenario 2: Employee-specific doctor handling
+            try:
+                employee_id = request.data.get("employee_id")
+                if employee_id:
+                    employee = Employee.objects.get(employee_id=employee_id)
+                else:
+                    return Response({"error": "employee_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+            except Employee.DoesNotExist:
+                return Response({"error": f"Employee {employee_id} not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Check if THIS EMPLOYEE already has this doctor
+            doctor_video = DoctorVideo.objects.select_related('employee').filter(
+                mobile_number=mobile, 
+                employee=employee
+            ).first()
+            
+            if doctor_video:
+                # Employee found their own existing doctor - UPDATE instead of create
+                clinic = content_data.get("doctor_clinic") or request.data.get("clinic", doctor_video.clinic)
+                city = content_data.get("doctor_city") or request.data.get("city", doctor_video.city)
+                specialization = content_data.get("doctor_specialization") or request.data.get("specialization", doctor_video.specialization)
+                state = content_data.get("doctor_state") or request.data.get("state", doctor_video.state)
+                
+                # Update existing doctor with new data (allow name changes)
+                doctor_video.name = name  # Name can be updated
+                doctor_video.clinic = clinic
+                doctor_video.city = city  
+                doctor_video.specialization = specialization
+                doctor_video.specialization_key = specialization
+                doctor_video.state = state
+                
+                # Handle image upload for existing doctor
+                uploaded_image = request.FILES.get('doctor_image')
+                if uploaded_image:
+                    doctor_video.image = uploaded_image
+                
+                doctor_video.save()
+                is_new_doctor = False
+                
+            else:
+                # Check if OTHER employees have this doctor (for auto-population)
+                existing_doctor = DoctorVideo.objects.filter(mobile_number=mobile).first()
+                
+                if existing_doctor:
+                    # Auto-populate from existing doctor but create new record
+                    clinic = content_data.get("doctor_clinic") or request.data.get("clinic", existing_doctor.clinic)
+                    city = content_data.get("doctor_city") or request.data.get("city", existing_doctor.city) 
+                    specialization = content_data.get("doctor_specialization") or request.data.get("specialization", existing_doctor.specialization)
+                    state = content_data.get("doctor_state") or request.data.get("state", existing_doctor.state)
+                else:
+                    # Completely new doctor
+                    clinic = content_data.get("doctor_clinic") or request.data.get("clinic", "Unknown Clinic")
+                    city = content_data.get("doctor_city") or request.data.get("city", "Unknown City")
+                    specialization = content_data.get("doctor_specialization") or request.data.get("specialization", "General Medicine")
+                    state = content_data.get("doctor_state") or request.data.get("state", "Unknown State")
 
+                # Create new doctor for this employee
                 doctor_video = DoctorVideo.objects.create(
                     name=name,
                     clinic=clinic,
@@ -1375,7 +1407,7 @@ class GenerateImageContentView(APIView):
 
         try:
             # Use background processing for images
-            
+
             # print(f"About to call generate_image_with_text with brand IDs: {selected_brand_ids}")
             # output_path = self.generate_image_with_text(template, content_data, doctor_video, selected_brand_ids)
             # image_content = ImageContent.objects.create(
@@ -1392,7 +1424,7 @@ class GenerateImageContentView(APIView):
 
             # Use background processing for images
             from .tasks import generate_image_async
-            
+
             task = generate_image_async.delay(
                 template_id=template_id,
                 doctor_id=doctor_video.id,
@@ -1400,7 +1432,7 @@ class GenerateImageContentView(APIView):
                 selected_brand_ids=selected_brand_ids,
                 current_employee_id=employee_id  # Add this line
             )
-            
+
             # Return task ID to frontend
             resp = {
                 "status": "processing",
@@ -1435,7 +1467,7 @@ class GenerateImageContentView(APIView):
                     "error": "System temporarily unavailable",
                     "retry_after": 30
                 }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-            
+
             logger.error(f"Image generation failed: {e}")
             logger.error(f"Template ID: {template.id}, Template has image: {bool(template.template_image)}")
             if template.template_image:
@@ -1446,31 +1478,31 @@ class GenerateImageContentView(APIView):
 
     def generate_image_with_text(self, template, content_data, doctor, selected_brand_ids=None):
         logger.info(f"Starting image generation for template {template.id}")
-        
+
         if not template.template_image or not template.template_image.path:
             raise Exception("Template image path is None or empty")
-        
+
         if not os.path.exists(template.template_image.path):
             raise Exception(f"Template image file does not exist: {template.template_image.path}")
-        
+
         # Memory-efficient image processing with explicit cleanup
         template_image = None
         draw = None
         brand_images = []  # Track all opened images for cleanup
-        
+
         # Make brand_images accessible to render_brands_in_area method
-        self._current_brand_images = brand_images        
+        self._current_brand_images = brand_images
         try:
             template_image = Image.open(template.template_image.path)
-            
-                
+
+
             # Convert to RGB if needed to reduce memory
             if template_image.mode not in ('RGB', 'RGBA'):
                 template_image = template_image.convert('RGB')
-            
-            
+
+
             draw = ImageDraw.Draw(template_image)
-            
+
             logger.info("Getting text positions...")
             positions = template.text_positions or {}
             logger.info(f"Text positions: {positions}")
@@ -1494,13 +1526,13 @@ class GenerateImageContentView(APIView):
 
             def get_font(font_family, font_size, font_weight='normal', font_style='normal'):
                 base_font = FONT_MAP.get(font_family, 'arial.ttf')
-                
+
                 # For cursive fonts, use full path
                 if font_family in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
                     font_path = os.path.join(settings.BASE_DIR, "fonts", base_font)
                 else:
                     font_path = base_font
-                
+
                 # Handle font weight (bold) - only for non-cursive fonts
                 if font_weight == 'bold' and font_family not in ['Dancing Script', 'Great Vibes', 'Pacifico', 'Allura', 'Alex Brush']:
                     bold_font = font_path.replace('.ttf', 'bd.ttf')
@@ -1519,7 +1551,7 @@ class GenerateImageContentView(APIView):
                             font = ImageFont.truetype("arial.ttf", font_size)
                         except:
                             font = ImageFont.load_default()
-                
+
                 return font
             ##
             # Combine city and state with comma if both exist
@@ -1544,32 +1576,32 @@ class GenerateImageContentView(APIView):
 
             if doctor_text_data:
                 print(f"🎯 Processing doctor fields for center alignment: {list(doctor_text_data.keys())}")
-                
+
                 # Calculate text widths for center alignment
                 field_widths = {}
                 field_fonts = {}
-                
+
                 for field_name, text_value in doctor_text_data.items():
                     pos = positions[field_name]
-                    font_size = int(pos.get('fontSize', 40))
+                    font_size = int(pos.get('fontSize', 40)) * 7
                     font_weight = pos.get('fontWeight', 'normal')
                     font_family = pos.get('fontFamily', 'Arial')
                     font_style = pos.get('fontStyle', 'normal')
-                    
+
                     styled_font = get_font(font_family, font_size, font_weight, font_style)
                     field_fonts[field_name] = styled_font
-                    
+
                     # Calculate text width using textbbox
                     bbox = draw.textbbox((0, 0), str(text_value), font=styled_font)
                     text_width = bbox[2] - bbox[0]
                     field_widths[field_name] = text_width
                     print(f"🎯 Field {field_name}: '{text_value}' = {text_width}px wide")
-                
+
                 # Find the widest text to base centering on
                 max_width = max(field_widths.values())
                 widest_field = max(field_widths, key=field_widths.get)
                 print(f"🎯 Widest field: {widest_field} ({max_width}px)")
-                
+
                 # Get base position from widest field
                 # Calculate the visual center point of the template
                 template_center_x = template_image.width // 2
@@ -1579,16 +1611,16 @@ class GenerateImageContentView(APIView):
                     pos = positions[field_name]
                     field_width = field_widths[field_name]
                     styled_font = field_fonts[field_name]
-                    
+
                     # Center each field based on template center, not relative to other fields
                     centered_x = template_center_x - (field_width // 2)
-                    y_pos = int(pos['y'])  # Keep original Y position                
+                    y_pos = int(pos['y'])  # Keep original Y position
                     print(f"🎯 Rendering {field_name} at centered position ({centered_x}, {y_pos})")
-                    
+
                     # Apply styling
                     color = pos.get('color', 'black')
                     font_style = pos.get('fontStyle', 'normal')
-                    
+
                     # Text shadow
                     text_shadow = pos.get('textShadow', 'none')
                     if text_shadow != 'none':
@@ -1598,7 +1630,7 @@ class GenerateImageContentView(APIView):
                                 (centered_x + shadow_info['offset_x'], y_pos + shadow_info['offset_y']),
                                 str(text_value), fill=shadow_info['color'], font=styled_font
                             )
-                    
+
                     # Render text with center alignment
                     # For cursive fonts, no need for italic simulation - they're naturally cursive
                     # For non-cursive fonts with italic style, apply simulation
@@ -1652,7 +1684,7 @@ class GenerateImageContentView(APIView):
                     logger.info(f"Doctor image enabled. Doctor: {doctor.name}")
                     logger.info(f"Doctor image field: {doctor.image}")
                     logger.info(f"Doctor image path: {doctor.image.path if doctor.image else 'None'}")
-                    
+
                     img_x = int(image_settings.get('x', 400))
                     img_y = int(image_settings.get('y', 50))
                     img_width = int(image_settings.get('width', 150))
@@ -1712,14 +1744,14 @@ class GenerateImageContentView(APIView):
     # Render brands in predefined area with smart layout
             if selected_brand_ids is None:
                 selected_brand_ids = content_data.get('selected_brands', [])
-            
+
             print(f"🔍 Final selected_brand_ids after processing: {selected_brand_ids}")
             print(f"🔍 Template brand_area_settings: {template.brand_area_settings}")
             print(f"🔍 Brand area enabled: {template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
             logger.info(f"Template ID: {template.id}, Template name: {template.name}")
             logger.info(f"Brand area settings: {template.brand_area_settings}")
             logger.info(f"Selected brand IDs: {selected_brand_ids}")
-            
+
             print(f"🔍 Checking condition: selected_brand_ids={bool(selected_brand_ids)}, has_area_settings={bool(template.brand_area_settings)}, area_enabled={template.brand_area_settings.get('enabled', False) if template.brand_area_settings else False}")
 
             if selected_brand_ids and template.brand_area_settings and template.brand_area_settings.get('enabled', False):
@@ -1727,21 +1759,21 @@ class GenerateImageContentView(APIView):
                 print(f"🔍 Rendering {len(selected_brand_ids)} brands in defined area")
                 brands = Brand.objects.filter(id__in=selected_brand_ids)
                 print(f"🔍 Found {brands.count()} brands to render")
-                
+
                 # ADD DETAILED DEBUG
                 for brand in brands:
                     print(f"🔍 Brand: {brand.name}, Image: {brand.brand_image}")
                     if brand.brand_image:
                         print(f"🔍 Brand image path: {brand.brand_image.path}")
                         print(f"🔍 Path exists: {os.path.exists(brand.brand_image.path)}")
-                
+
                 print(f"🔍 About to call render_brands_in_area with area: {template.brand_area_settings}")
-                
+
                 try:
                     # Ensure template_image is in RGBA mode before brand rendering
                     if template_image.mode != 'RGBA':
                         template_image = template_image.convert('RGBA')
-                        
+
                     self.render_brands_in_area(template_image, brands, template.brand_area_settings)
                     print("🔍 Successfully finished calling render_brands_in_area")
                 except Exception as e:
@@ -1763,25 +1795,25 @@ class GenerateImageContentView(APIView):
             # Save the final image AFTER all operations including brand rendering
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, f"temp_image_{uuid.uuid4().hex}.png")
-            
+
             # Convert to RGB before saving to ensure compatibility
             # Save with transparency preserved - DON'T convert to RGB
             if template_image.mode == 'RGBA':
-                template_image.save(output_path, 'PNG', 
-                                quality=100, 
-                                optimize=False, 
+                template_image.save(output_path, 'PNG',
+                                quality=100,
+                                optimize=False,
                                 compress_level=0,
                                 dpi=(300, 300))
             else:
-                template_image.save(output_path, 'PNG', 
-                                quality=100, 
-                                optimize=False, 
+                template_image.save(output_path, 'PNG',
+                                quality=100,
+                                optimize=False,
                                 compress_level=0,
                                 dpi=(300, 300))
-            
+
             return output_path
-        #    
-        
+        #
+
         except Exception as e:
             logger.error(f"Image generation error: {e}")
             raise
@@ -1796,7 +1828,7 @@ class GenerateImageContentView(APIView):
             if draw is not None:
                 try:
                     del draw
-                except: 
+                except:
                     pass
             # Clean up any brand images
             if hasattr(self, '_current_brand_images'):
@@ -1808,66 +1840,66 @@ class GenerateImageContentView(APIView):
                         pass
                 self._current_brand_images.clear()
                 delattr(self, '_current_brand_images')
-            
+
             # Force garbage collection
             import gc
             gc.collect()
-                        
-        
+
+
 
     def render_brands_in_area(self, template_image, brands, area_settings):
         """Render brands using predefined slots with smart centering"""
         print(f"🔍 INSIDE render_brands_in_area with {brands.count()} brands")
         print(f"🔍 Area settings: {area_settings}")
-        
+
         if not brands or not area_settings.get('enabled'):
             print("🔍 Exiting early - no brands or area not enabled")
             return
-            
+
         area_x = area_settings.get('x', 50)
         area_y = area_settings.get('y', 400)
         area_width = area_settings.get('width', 700)
         area_height = area_settings.get('height', 150)
         slots = area_settings.get('slots', [])
-        
+
         if not slots:
             print("🔍 No slots defined, exiting")
             return
-        
+
         print(f"🔍 Area position: ({area_x}, {area_y})")
         print(f"🔍 Area size: {area_width}x{area_height}")
         print(f"🔍 Available slots: {len(slots)}")
-        
+
         # Get only the slots we need (based on number of brands)
         brands_list = list(brands)
         needed_slots = slots[:len(brands_list)]
-        
+
         print(f"🔍 Using {len(needed_slots)} slots for {len(brands_list)} brands")
-        
+
         # Calculate bounding box of needed slots for centering
         if len(needed_slots) < len(slots):
             min_x = min(slot['x'] for slot in needed_slots)
             max_x = max(slot['x'] + slot['width'] for slot in needed_slots)
             min_y = min(slot['y'] for slot in needed_slots)
             max_y = max(slot['y'] + slot['height'] for slot in needed_slots)
-            
+
             used_width = max_x - min_x
             used_height = max_y - min_y
-            
+
             # Calculate centering offset
             center_offset_x = (area_width - used_width) // 2 - min_x
             center_offset_y = (area_height - used_height) // 2 - min_y
-            
+
             print(f"🔍 Centering offset: ({center_offset_x}, {center_offset_y})")
         else:
             # Using all slots, no centering needed
             center_offset_x = 0
             center_offset_y = 0
-        
+
         # Render brands in slots
         for i, (brand, slot) in enumerate(zip(brands_list, needed_slots)):
             print(f"🔍 Processing brand {i+1}: {brand.name}")
-            
+
             if brand.brand_image and brand.brand_image.path and os.path.exists(brand.brand_image.path):
                 try:
                     # Calculate final position with centering offset
@@ -1875,10 +1907,10 @@ class GenerateImageContentView(APIView):
                     final_y = area_y + slot['y'] + center_offset_y
                     slot_width = slot['width']
                     slot_height = slot['height']
-                    
+
                     print(f"🔍 Slot {i+1} position: ({final_x}, {final_y})")
                     print(f"🔍 Slot {i+1} size: {slot_width}x{slot_height}")
-                    
+
                     # Load and resize brand image
                     # Load and resize brand image with memory management
                     # Load and resize brand image with memory management
@@ -1887,7 +1919,7 @@ class GenerateImageContentView(APIView):
                         if not os.path.exists(brand.brand_image.path):
                             logger.warning(f"Brand image file not found: {brand.brand_image.path}")
                             continue
-                            
+
 
                         brand_img = Image.open(brand.brand_image.path)
                         # DEBUG: Check brand image properties
@@ -1920,7 +1952,7 @@ class GenerateImageContentView(APIView):
 
                         print(f"🔍 After conversion - Mode: {brand_img.mode}")
                         # Don't force RGB conversion - preserve transparency
-                        
+
                         # Resize brand image
                         # brand_img = brand_img.resize((slot_width, slot_height), Image.Resampling.LANCZOS)
 
@@ -1951,7 +1983,7 @@ class GenerateImageContentView(APIView):
                             else:
                                 centered_img.paste(brand_img, (paste_x, paste_y))
                             brand_img = centered_img
-                        
+
                         # Paste brand image
                         # Paste brand image with proper alpha handling
                         if template_image.mode != 'RGBA':
@@ -1961,7 +1993,7 @@ class GenerateImageContentView(APIView):
                             template_image.paste(brand_img, (final_x, final_y), brand_img)  # Use alpha mask
                         else:
                             template_image.paste(brand_img, (final_x, final_y))
-                        
+
                     except (IOError, OSError) as e:
                         logger.warning(f"Failed to process brand image {brand.id}: {e}")
                         continue
@@ -1971,10 +2003,10 @@ class GenerateImageContentView(APIView):
                                 brand_img.close()
                             except:
                                 pass
-                    
+
                     logger.info(f"Rendered brand {brand.name} in slot {i+1} at ({final_x}, {final_y})")
                     print(f"🔍 Successfully pasted brand {brand.name} at ({final_x}, {final_y})")
-                    
+
                 except Exception as e:
                     print(f"🔍 Failed to render brand {brand.name}: {e}")
                     logger.error(f"Failed to render brand {brand.name}: {e}")
@@ -1998,29 +2030,59 @@ class ImageContentListView(APIView):
         serializer = ImageContentSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
 
-
 class DoctorSearchView(APIView):
-    """Search doctor by mobile number or name"""
+    """Search doctor by mobile number - Employee specific"""
     def get(self, request):
         mobile = request.GET.get('mobile')
+        employee_id = request.GET.get('employee_id')
+        
         if not mobile:
             return Response({"error": "mobile parameter required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if not employee_id:
+            return Response({"error": "employee_id parameter required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            current_employee = Employee.objects.get(employee_id=employee_id)
+        except Employee.DoesNotExist:
+            return Response({"error": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # First check if current employee already has this doctor
+        existing_doctor = DoctorVideo.objects.filter(
+            mobile_number=mobile,
+            employee=current_employee
+        ).first()
+        
+        if existing_doctor:
+            return Response({
+                "found": True,
+                "own_doctor": True,
+                "doctor": {
+                    "id": existing_doctor.id, "name": existing_doctor.name, "clinic": existing_doctor.clinic,
+                    "city": existing_doctor.city, "mobile": existing_doctor.mobile_number,
+                    "specialization": existing_doctor.specialization, "state": existing_doctor.state,
+                }
+            })
+        
+        # Check if any other employee has this doctor (for auto-population only)
         doctor_video = DoctorVideo.objects.filter(mobile_number=mobile).first()
         if doctor_video:
             return Response({
                 "found": True,
+                "own_doctor": False,
                 "doctor": {
-                    "id": doctor_video.id, "name": doctor_video.name, "clinic": doctor_video.clinic,
+                    "name": doctor_video.name, "clinic": doctor_video.clinic,
                     "city": doctor_video.city, "mobile": doctor_video.mobile_number,
                     "specialization": doctor_video.specialization, "state": doctor_video.state,
-                    "model": "DoctorVideo"
+                    "readonly_fields": ["name", "mobile_number"]  # These fields will be readonly
                 }
             })
+        
         return Response({"found": False})
-
+    
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
-# @ratelimit(key='ip', rate='10/m', method='POST', block=True)
+# #@ratelimit(key='ip', rate='10/m', method='POST', block=True)
 def AddEmployeeTemplates(request, template_type='video'):
     """Handle both video and image template creation"""
     try:
@@ -2112,22 +2174,22 @@ class DoctorUpdateDeleteView(APIView):
             employee_id = request.query_params.get('employee_id')
             if not employee_id:
                 return Response({'error': 'employee_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             doctor = self.get_doctor(doctor_id, employee_id)
             doctor_name = doctor.name
-            
+
             # DoctorOutputVideo model removed - only delete images
             deleted_videos = 0  # No video model to count
             deleted_images = ImageContent.objects.filter(doctor=doctor).count()
-            
+
             # DoctorOutputVideo.objects.filter(doctor=doctor).delete()  # Model removed
             ImageContent.objects.filter(doctor=doctor).delete()
-            
+
             # Delete the doctor
             doctor.delete()
-            
+
             return Response({
-                'status': 'success', 
+                'status': 'success',
                 'message': f'Doctor {doctor_name} deleted successfully. Removed {deleted_videos} videos and {deleted_images} images.',
                 'deleted_content': {
                     'videos': deleted_videos,
@@ -2181,10 +2243,10 @@ class BrandListAPIView(generics.ListAPIView):
     queryset = Brand.objects.all().order_by('category', 'name')
     serializer_class = BrandSerializer
     permission_classes = [AllowAny]  # Add this line
-    
+
     def get(self, request, *args, **kwargs):
         brands = self.get_queryset()
-        
+
         # Group brands by category
         categories = {}
         for brand in brands:
@@ -2200,13 +2262,13 @@ class BrandListAPIView(generics.ListAPIView):
                 'name': brand.name,
                 'brand_image': request.build_absolute_uri(brand.brand_image.url) if brand.brand_image else None
             })
-        
+
         return Response({
             'categories': list(categories.values()),
             'total_brands': brands.count()
         })
 
-class ImageTemplateUsageView(APIView):  
+class ImageTemplateUsageView(APIView):
     def get(self, request):
         # Enhanced query with per-doctor usage counts
         template_data = ImageContent.objects.select_related('template', 'doctor').values(
@@ -2216,7 +2278,7 @@ class ImageTemplateUsageView(APIView):
         ).filter(
             template__id__isnull=False
         ).order_by('-usage_count')
-        
+
         data = []
         for item in template_data:
             # Get detailed doctor usage for this template
@@ -2225,7 +2287,7 @@ class ImageTemplateUsageView(APIView):
             ).values('doctor__name').annotate(
                 count=Count('id')
             ).order_by('-count')
-            
+
             doctor_details = [
                 {
                     "name": usage["doctor__name"],
@@ -2233,7 +2295,7 @@ class ImageTemplateUsageView(APIView):
                 }
                 for usage in doctor_usage if usage["doctor__name"]
             ]
-            
+
             data.append({
                 "template_id": item["template__id"],
                 "template_name": item["template__name"],
@@ -2241,19 +2303,19 @@ class ImageTemplateUsageView(APIView):
                 "doctor_names": [doc["name"] for doc in doctor_details],
                 "doctor_details": doctor_details  # NEW: detailed usage per doctor
             })
-        
+
         return Response(data, status=status.HTTP_200_OK)
-    
+
 
 from celery.result import AsyncResult
 
 class TaskStatusView(APIView):
     permission_classes = [AllowAny]
-    
+
     def get(self, request, task_id):
         """Check image generation status"""
         result = AsyncResult(task_id)
-        
+
         if result.ready():
             if result.successful():
                 task_result = result.get()
@@ -2268,13 +2330,13 @@ class TaskStatusView(APIView):
                         })
                     except ImageContent.DoesNotExist:
                         pass
-                        
+
                 return Response({"status": "completed", "result": task_result})
             else:
                 return Response({"status": "failed", "error": str(result.info)})
         else:
             return Response({"status": "processing"})
-        
+
 
 
 from django.http import JsonResponse
@@ -2284,70 +2346,71 @@ from django.views.decorators.csrf import csrf_exempt
 def test_cors(request):
     return JsonResponse({"status": "CORS working", "method": request.method})
 
-class DoctorUsageHistoryView(APIView):
-    permission_classes = [IsAuthenticated]
+# class DoctorUsageHistoryView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         doctor_id = request.GET.get('doctor_id')
+#         employee_id = request.GET.get('employee_id')
+
+#         if doctor_id:
+#             # Get usage history for specific doctor
+#             history = DoctorUsageHistory.objects.filter(
+#                 doctor_id=doctor_id,
+#                 content_type='image'
+#             ).select_related('employee', 'template')
+
+#             return Response([{
+#                 'employee_name': f"{h.employee.first_name} {h.employee.last_name}",
+#                 'employee_id': h.employee.employee_id,
+#                 'template_name': h.template.name,
+#                 'generated_at': h.generated_at,
+#                 'is_current_employee': h.employee.employee_id == employee_id
+#             } for h in history])
+
+#         return Response([])
     
-    def get(self, request):
-        doctor_id = request.GET.get('doctor_id')
-        employee_id = request.GET.get('employee_id')
-        
-        if doctor_id:
-            # Get usage history for specific doctor
-            history = DoctorUsageHistory.objects.filter(
-                doctor_id=doctor_id,
-                content_type='image'
-            ).select_related('employee', 'template')
-            
-            return Response([{
-                'employee_name': f"{h.employee.first_name} {h.employee.last_name}",
-                'employee_id': h.employee.employee_id,
-                'template_name': h.template.name,
-                'generated_at': h.generated_at,
-                'is_current_employee': h.employee.employee_id == employee_id
-            } for h in history])
-        
-        return Response([])
-class SharedDoctorsView(APIView):
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
-        employee_id = request.GET.get('employee_id')
-        
-        if not employee_id:
-            return Response({"error": "employee_id required"}, status=400)
-        
-        try:
-            employee = Employee.objects.get(employee_id=employee_id)
-        except Employee.DoesNotExist:
-            return Response({"error": "Employee not found"}, status=404)
-        
-        # Get doctors used by this employee but created by others
-        used_doctors = DoctorUsageHistory.objects.filter(
-            employee=employee,
-            content_type='image'
-        ).exclude(
-            doctor__employee=employee
-        ).select_related('doctor', 'doctor__employee').values('doctor').distinct()
-        
-        # Get unique doctor IDs
-        doctor_ids = [usage['doctor'] for usage in used_doctors]
-        unique_doctors = DoctorVideo.objects.filter(id__in=doctor_ids)
-        
-        doctors_data = []
-        for doctor in unique_doctors:
-            doctors_data.append({
-                'id': doctor.id,
-                'name': doctor.name,
-                'mobile_number': doctor.mobile_number,
-                'original_employee': f"{doctor.employee.first_name} {doctor.employee.last_name}",
-                'last_used': DoctorUsageHistory.objects.filter(
-                    doctor=doctor,
-                    employee=employee
-                ).latest('generated_at').generated_at,
-                'usage_count': DoctorUsageHistory.objects.filter(
-                    doctor=doctor,
-                    employee=employee
-                ).count()
-            })
-        
-        return Response(doctors_data)
+# class SharedDoctorsView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         employee_id = request.GET.get('employee_id')
+
+#         if not employee_id:
+#             return Response({"error": "employee_id required"}, status=400)
+
+#         try:
+#             employee = Employee.objects.get(employee_id=employee_id)
+#         except Employee.DoesNotExist:
+#             return Response({"error": "Employee not found"}, status=404)
+
+#         # Get doctors used by this employee but created by others
+#         used_doctors = DoctorUsageHistory.objects.filter(
+#             employee=employee,
+#             content_type='image'
+#         ).exclude(
+#             doctor__employee=employee
+#         ).select_related('doctor', 'doctor__employee').values('doctor').distinct()
+
+#         # Get unique doctor IDs
+#         doctor_ids = [usage['doctor'] for usage in used_doctors]
+#         unique_doctors = DoctorVideo.objects.filter(id__in=doctor_ids)
+
+#         doctors_data = []
+#         for doctor in unique_doctors:
+#             doctors_data.append({
+#                 'id': doctor.id,
+#                 'name': doctor.name,
+#                 'mobile_number': doctor.mobile_number,
+#                 'original_employee': f"{doctor.employee.first_name} {doctor.employee.last_name}",
+#                 'last_used': DoctorUsageHistory.objects.filter(
+#                     doctor=doctor,
+#                     employee=employee
+#                 ).latest('generated_at').generated_at,
+#                 'usage_count': DoctorUsageHistory.objects.filter(
+#                     doctor=doctor,
+#                     employee=employee
+#                 ).count()
+#             })
+
+#         return Response(doctors_data)

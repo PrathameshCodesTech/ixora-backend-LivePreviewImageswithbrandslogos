@@ -27,16 +27,16 @@ class Employee(models.Model):
         related_name='team_members'  # Optional reverse relation
     )
     city = models.CharField(max_length=30,blank=True, null=True)
-    has_logged_in = models.BooleanField(default=False)  
-    
+    has_logged_in = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-    
+
 
 
 class EmployeeLoginHistory(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='login_history')
-    
+
     # Snapshot fields (renamed to avoid conflict)
     employee_identifier = models.CharField(max_length=10,null=True, blank=True)  # Was employee_id
     name = models.CharField(max_length=200,null=True, blank=True)
@@ -59,7 +59,7 @@ class DoctorVideo(models.Model):
     image = models.ImageField(upload_to='doctor_images/')
     specialization = models.CharField(max_length=255, db_index=True)
     specialization_key = models.CharField(max_length=255, null=True, blank=True)
-    mobile_number = models.CharField(max_length=15, unique=True, db_index=True)
+    mobile_number = models.CharField(max_length=15, db_index=True)
     whatsapp_number = models.CharField(max_length=15)
     description = models.TextField()
     output_video = models.FileField(upload_to='output/', null=True, blank=True)
@@ -69,8 +69,9 @@ class DoctorVideo(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
+        unique_together = [['employee', 'mobile_number']]
         indexes = [
             models.Index(fields=['employee', 'created_at']),
             models.Index(fields=['mobile_number', 'name']),
@@ -81,14 +82,14 @@ class DoctorVideo(models.Model):
 
 
 class VideoTemplates(models.Model):
-    
+
     name = models.CharField(max_length=100,null=True, blank=True)
     template_video = models.FileField(upload_to='video-template/')
     created_by = models.ForeignKey(
-        Employee, 
-        on_delete=models.CASCADE, 
+        Employee,
+        on_delete=models.CASCADE,
         related_name='created_templates',
-        null=True, 
+        null=True,
         blank=True
     )
     is_public = models.BooleanField(default=True)
@@ -106,7 +107,7 @@ class VideoTemplates(models.Model):
     #! Added By Prathamesh-
 
     template_type = models.CharField(
-        max_length=20, 
+        max_length=20,
         choices=[('video', 'Video Template'), ('image', 'Image Template')],
         default='video'
     )
@@ -116,9 +117,9 @@ class VideoTemplates(models.Model):
 
 
     brand_area_settings = models.JSONField(
-        null=True, blank=True, 
+        null=True, blank=True,
         help_text="Brand placement area: {'enabled': True, 'x': 50, 'y': 400, 'width': 700, 'height': 150, 'brandWidth': 100, 'brandHeight': 60}"
-    )    
+    )
     def __str__(self):
         return f"Video for {self.template_video} and {self.template_image}"
 
@@ -128,27 +129,27 @@ class VideoTemplates(models.Model):
 
 class ImageContent(models.Model):
     template = models.ForeignKey(
-        VideoTemplates, 
+        VideoTemplates,
         on_delete=models.CASCADE,
         limit_choices_to={'template_type': 'image'},
         related_name='image_contents'
     )
     # CHANGE: Link to DoctorVideo instead of Employee
     doctor = models.ForeignKey(
-        DoctorVideo, 
-        on_delete=models.CASCADE, 
+        DoctorVideo,
+        on_delete=models.CASCADE,
         related_name='image_contents'
     )
-    
+
     # Store dynamic content as JSON
     content_data = models.JSONField(
         help_text="Store form data like: {'name': 'John', 'message': 'Good Morning'}"
     )
-    
+
     # Generated output image
     output_image = models.ImageField(upload_to='generated-images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return f"Image Content for Dr. {self.doctor.name} - {self.template.name}"
 
@@ -165,8 +166,8 @@ class ImageContent(models.Model):
 
 def doctor_video_upload_path(instance, filename):
     employee_id = (
-        instance.doctor.employee.id 
-        if instance.doctor and hasattr(instance.doctor, 'employee') and instance.doctor.employee 
+        instance.doctor.employee.id
+        if instance.doctor and hasattr(instance.doctor, 'employee') and instance.doctor.employee
         else 'unknown_employee'
     )
     doctor_id = instance.doctor.id if instance.doctor else 'unknown_doctor'
@@ -185,7 +186,7 @@ class Brand(models.Model):
         ('ANTI_EPILEPTIC', 'Anti-Epileptic'),
         ('SEDATIVES', 'Sedatives / Anti Anxiolytics'),
     ]
-    
+
     name = models.CharField(max_length=100)
     brand_image = models.ImageField(upload_to='brand-images/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='PAIN')
@@ -198,7 +199,7 @@ class Brand(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
-    
+
 
 class DoctorUsageHistory(models.Model):
     doctor = models.ForeignKey(DoctorVideo, on_delete=models.CASCADE, related_name='usage_history')
@@ -207,6 +208,6 @@ class DoctorUsageHistory(models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
     content_type = models.CharField(max_length=20, default='image')  # image/video
     image_content = models.ForeignKey(ImageContent, on_delete=models.CASCADE, null=True, blank=True)
-    
+
     class Meta:
         ordering = ['-generated_at']

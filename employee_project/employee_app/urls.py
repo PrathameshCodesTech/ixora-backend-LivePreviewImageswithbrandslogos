@@ -3,7 +3,7 @@ from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 
 from .views import ( VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,DoctorUpdateDeleteView,BrandListAPIView,ImageTemplateUsageView,TaskStatusView,HealthCheckView,system_metrics,
-DoctorUsageHistoryView,SharedDoctorsView
+#DoctorUsageHistoryView,SharedDoctorsView
 )
 
 from django.http import JsonResponse
@@ -84,6 +84,6 @@ urlpatterns = [
     path('api/doctors-by-employee/', DoctorListByEmployee.as_view(), name='doctors-by-employee'),
 
     # Add these new URL patterns
-    path('api/doctor-usage-history/', DoctorUsageHistoryView.as_view(), name='doctor-usage-history'),
-    path('api/shared-doctors/', SharedDoctorsView.as_view(), name='shared-doctors'),
+    # path('api/doctor-usage-history/', DoctorUsageHistoryView.as_view(), name='doctor-usage-history'),
+    # path('api/shared-doctors/', SharedDoctorsView.as_view(), name='shared-doctors'),
 ]
