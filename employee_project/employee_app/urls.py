@@ -3,7 +3,8 @@ from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 
 from .views import ( VideoGenViewSet,DoctorVideoViewSet,EmployeeViewSet,employee_login_api,add_doctor,bulk_upload_employees,DoctorListByEmployee, DoctorVideoListView,CustomTokenRefreshView,bulk_upload_doctors,DoctorVideoGeneration,EmployeeExportExcelView,DoctorVideoExportExcelView,total_employee_count,todays_active_employees,TodaysActiveEmployeeExcelExport,doctors_with_output_video_count,doctors_with_output_video_excel,doctors_count,VideoTemplateAPIView,GenerateDoctorOutputVideoView, update_employees_from_excel,TemplateWiseVideoCountView,ImageTemplateAPIView,ImageContentListView,GenerateImageContentView,DoctorSearchView,AddEmployeeTemplates,getFilteredVideoTemplates,DeleteContentView,DoctorUpdateDeleteView,BrandListAPIView,ImageTemplateUsageView,TaskStatusView,HealthCheckView,system_metrics,
-#DoctorUsageHistoryView,SharedDoctorsView
+#DoctorUsageHistoryView,SharedDoctorsView,
+get_rbm_regions,validate_designation
 )
 
 from django.http import JsonResponse
@@ -31,6 +32,8 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('api/login/', employee_login_api, name='employee_login_api'),
+    path('api/rbm-regions/', get_rbm_regions, name='get_rbm_regions'),
+    path('api/validate-designation/', validate_designation, name='validate_designation'),
     path('api/doctors/add/', add_doctor, name='add_doctor'),
     path('api/', include(router.urls)),
     path('api/bulk-upload-employees/', bulk_upload_employees, name='bulk_upload_employees'),

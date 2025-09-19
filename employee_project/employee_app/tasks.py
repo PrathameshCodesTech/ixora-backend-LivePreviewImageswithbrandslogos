@@ -528,51 +528,87 @@ def render_brands_in_area(template_image, brands, area_settings):
     brands_count = len(brands_list)
 
     # Smart centering algorithm for 3x3 grid (9 slots)
+    # Smart centering algorithm for 3x3 grid (9 slots) with dynamic center alignment
     if total_slots == 9 and brands_count < total_slots:
-        rows = [slots[0:3], slots[3:6], slots[6:9]]  # Row 1, Row 2, Row 3
+        # Based on your slot arrangement (right to left per row)
+        # Slots: [0=right, 1=center, 2=left] for row 1
+        # Slots: [3=left, 4=center, 5=right] for row 2  
+        # Slots: [6=left, 7=center, 8=right] for row 3
+        rows = [
+            [slots[2], slots[1], slots[0]],  # Row 1: left, center, right (reordered)
+            [slots[3], slots[4], slots[5]],  # Row 2: left, center, right (already ordered)
+            [slots[6], slots[7], slots[8]]   # Row 3: left, center, right (already ordered)
+        ]
         needed_slots = []
 
-        if brands_count == 1:
-            # Center in middle slot of row 2
-            needed_slots = [rows[1][1]]  # Slot 5
-            print("1 brand: Centered in row 2 middle")
+        def center_brands_in_row(row_slots, brand_count):
+            """Center align brands within a row dynamically"""
+            if brand_count == 1:
+                return [row_slots[1]]  # Use center slot
+            elif brand_count == 2:
+                # Calculate center positions for 2 brands closer together
+                left_slot = row_slots[0].copy()
+                right_slot = row_slots[2].copy()
+                
+                # Get the center position of the middle slot
+                center_slot = row_slots[1]
+                center_x = center_slot['x'] + center_slot['width'] // 2
+                brand_width = left_slot['width']
+                
+                # Position brands closer to center with small gap
+                gap = 60  # Small gap between brands
+                left_slot['x'] = center_x - brand_width - gap // 2
+                right_slot['x'] = center_x + gap // 2
+                
+                print(f"Centering 2 brands: left at {left_slot['x']}, right at {right_slot['x']}")
+                print(f"Center point: {center_x}, brand width: {brand_width}, gap: {gap}")
+                
+                return [left_slot, right_slot]
+            else:
+                return row_slots[:brand_count]  # Fill from left to right
+        if brands_count <= 3:
+            if brands_count == 1:
+                # Center in middle row
+                needed_slots = center_brands_in_row(rows[1], 1)
+                print("1 brand: Centered in row 2")
+            elif brands_count == 2:
+                # Center 2 brands in first row
+                needed_slots = center_brands_in_row(rows[0], 2)
+                print("2 brands: Centered in row 1")
+            else:  # brands_count == 3
+                # Fill first row completely
+                needed_slots = rows[0]
+                print("3 brands: Fill row 1")
 
-        elif brands_count == 2:
-            # Center 2 brands in row 2
-            needed_slots = [rows[1][0], rows[1][2]]  # Slots 4, 6
-            print("2 brands: Centered in row 2")
+        elif brands_count <= 6:
+            if brands_count == 4:
+                # Center 2 in row 1, center 2 in row 2
+                needed_slots = center_brands_in_row(rows[0], 2) + center_brands_in_row(rows[1], 2)
+                print("4 brands: Center 2 in row 1, center 2 in row 2")
+            elif brands_count == 5:
+                # Center 2 in row 1, fill row 2
+                needed_slots = center_brands_in_row(rows[0], 2) + rows[1]
+                print("5 brands: Center 2 in row 1, fill row 2")
+            else:  # brands_count == 6
+                # Fill rows 1 and 2
+                needed_slots = rows[0] + rows[1]
+                print("6 brands: Fill rows 1 and 2")
 
-        elif brands_count == 3:
-            # Fill row 2 completely
-            needed_slots = rows[1]  # Slots 4, 5, 6
-            print("3 brands: Fill row 2")
-
-        elif brands_count == 4:
-            # Center 2 in row 1, center 2 in row 2
-            needed_slots = [rows[0][0], rows[0][2], rows[1][0], rows[1][2]]  # Slots 1,3,4,6
-            print("4 brands: Center 2 in row 1, center 2 in row 2")
-
-        elif brands_count == 5:
-            # Center 2 in row 1, fill row 2
-            needed_slots = [rows[0][0], rows[0][2]] + rows[1]  # Slots 1,3,4,5,6
-            print("5 brands: Center 2 in row 1, fill row 2")
-
-        elif brands_count == 6:
-            # Fill rows 1 and 2 completely
-            needed_slots = rows[0] + rows[1]  # Slots 1,2,3,4,5,6
-            print("6 brands: Fill rows 1 and 2")
-
-        elif brands_count == 7:
-            # Fill rows 1 and 2, center 1 in row 3
-            needed_slots = rows[0] + rows[1] + [rows[2][1]]  # Slots 1,2,3,4,5,6,8
-            print("7 brands: Fill rows 1,2 and center 1 in row 3")
-
-        elif brands_count == 8:
-            # Fill rows 1 and 2, center 2 in row 3
-            needed_slots = rows[0] + rows[1] + [rows[2][0], rows[2][2]]  # Slots 1,2,3,4,5,6,7,9
-            print("8 brands: Fill rows 1,2 and center 2 in row 3")
+        else:  # brands_count > 6
+            if brands_count == 7:
+                # Fill rows 1,2 and center 1 in row 3
+                needed_slots = rows[0] + rows[1] + center_brands_in_row(rows[2], 1)
+                print("7 brands: Fill rows 1,2 and center 1 in row 3")
+            elif brands_count == 8:
+                # Fill rows 1,2 and center 2 in row 3
+                needed_slots = rows[0] + rows[1] + center_brands_in_row(rows[2], 2)
+                print("8 brands: Fill rows 1,2 and center 2 in row 3")
 
         print(f"Smart centering complete: {len(needed_slots)} slots selected for {brands_count} brands")
+        
+        # Debug output
+        for i, slot in enumerate(needed_slots):
+            print(f"Slot {i+1}: x={slot['x']}, y={slot['y']}")
     else:
         # Fallback for non-9-slot layouts or when using all slots
         needed_slots = slots[:brands_count]

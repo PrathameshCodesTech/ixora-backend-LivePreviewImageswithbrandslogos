@@ -2,6 +2,21 @@ from django.db import models
 from django.utils import timezone
 import os
 
+class Designation(models.Model):
+    login_code = models.CharField(max_length=100, unique=True, db_index=True)
+    rbm_region = models.CharField(max_length=100, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['login_code', 'rbm_region']),
+            models.Index(fields=['rbm_region']),
+        ]
+
+    def __str__(self):
+        return f"{self.login_code} -> {self.rbm_region}"
+
+
 class Employee(models.Model):
     USER_TYPE_CHOICES = [
         ('Employee', 'Employee'),
@@ -9,7 +24,7 @@ class Employee(models.Model):
         ('SuperAdmin', 'SuperAdmin'),
     ]
 
-    employee_id = models.CharField(max_length=10, unique=True, db_index=True)
+    employee_id = models.CharField(max_length=100, unique=True, db_index=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(unique=True, null=True, blank=True)
@@ -19,12 +34,18 @@ class Employee(models.Model):
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='Employee')
     status = models.BooleanField(default=True)
     login_date = models.DateTimeField(default=timezone.now)
+    
+    # NEW FIELDS FOR DESIGNATION SYSTEM
+    designation = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    rbm_region = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    
+    # Keep old rbm field for backward compatibility
     rbm = models.ForeignKey(
-        'self',                   # Self-referential
-        on_delete=models.SET_NULL,  # Prefer SET_NULL to avoid cascade delete
+        'self',
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='team_members'  # Optional reverse relation
+        related_name='team_members'
     )
     city = models.CharField(max_length=30,blank=True, null=True)
     has_logged_in = models.BooleanField(default=False)
@@ -38,7 +59,7 @@ class EmployeeLoginHistory(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='login_history')
 
     # Snapshot fields (renamed to avoid conflict)
-    employee_identifier = models.CharField(max_length=10,null=True, blank=True)  # Was employee_id
+    employee_identifier = models.CharField(max_length=100,null=True, blank=True)  # Was employee_id
     name = models.CharField(max_length=200,null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
@@ -191,9 +212,10 @@ class Brand(models.Model):
     brand_image = models.ImageField(upload_to='brand-images/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='PAIN')
     uploaded_by = models.ForeignKey(
-        'Employee',
-        on_delete=models.CASCADE,
-        related_name='uploaded_brands'
+    'Employee',
+    on_delete=models.CASCADE,
+    related_name='uploaded_brands',
+    limit_choices_to={'user_type__in': ['Admin', 'SuperAdmin']}
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

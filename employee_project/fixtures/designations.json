@@ -1,0 +1,330 @@
+[
+  {
+    "model": "employee_app.designation",
+    "pk": 1,
+    "fields": {
+      "login_code": "SM-Kolkata",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 2,
+    "fields": {
+      "login_code": "RBM-Kolkata",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 3,
+    "fields": {
+      "login_code": "BM-Kolkata-2",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 4,
+    "fields": {
+      "login_code": "SO-North Kolkata 1",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 5,
+    "fields": {
+      "login_code": "SO-North Kolkata 2",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 6,
+    "fields": {
+      "login_code": "SO-North 24 - 1",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 7,
+    "fields": {
+      "login_code": "SO-North 24 - 2",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 8,
+    "fields": {
+      "login_code": "BM-Kolkata-1",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 9,
+    "fields": {
+      "login_code": "SO-Kolkata-Central 1",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 10,
+    "fields": {
+      "login_code": "SO-South Kolkata 2",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 11,
+    "fields": {
+      "login_code": "SO-South Kolkata 1",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 12,
+    "fields": {
+      "login_code": "SO-Kolkata-Central 2",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 13,
+    "fields": {
+      "login_code": "BM-Bardhaman",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 14,
+    "fields": {
+      "login_code": "SO-Bardhaman",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 15,
+    "fields": {
+      "login_code": "SO-Asansol",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 16,
+    "fields": {
+      "login_code": "SO-Paschim Medinipur",
+      "rbm_region": "RBM-KOLKATA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 17,
+    "fields": {
+      "login_code": "RBM-Guwahati",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 18,
+    "fields": {
+      "login_code": "BM-Guwahati",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 19,
+    "fields": {
+      "login_code": "SO-Guwahati-1",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 20,
+    "fields": {
+      "login_code": "SO-Guwahati-2",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 21,
+    "fields": {
+      "login_code": "SO-Dibrugarh",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 22,
+    "fields": {
+      "login_code": "SO-Agartala",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 23,
+    "fields": {
+      "login_code": "BM-Siliguri",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 24,
+    "fields": {
+      "login_code": "SO-Siliguri-1",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 25,
+    "fields": {
+      "login_code": "SO-Siliguri-2",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 26,
+    "fields": {
+      "login_code": "SO-Behrampore",
+      "rbm_region": "RBM-GUWAHATI"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 27,
+    "fields": {
+      "login_code": "RBM-Patna",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 28,
+    "fields": {
+      "login_code": "BM-Patna",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 29,
+    "fields": {
+      "login_code": "SO-Patna-1",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 30,
+    "fields": {
+      "login_code": "SO-Patna-2",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 31,
+    "fields": {
+      "login_code": "SO-Muzaffarpur",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 32,
+    "fields": {
+      "login_code": "SO-Bhagalpur",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 33,
+    "fields": {
+      "login_code": "BM-Ranchi-2",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 34,
+    "fields": {
+      "login_code": "SO-Ranchi-1",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 35,
+    "fields": {
+      "login_code": "SO-Ranchi-2",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 36,
+    "fields": {
+      "login_code": "SO-Dhanbad",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 37,
+    "fields": {
+      "login_code": "BM-CUTTACK",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 38,
+    "fields": {
+      "login_code": "SO-Cuttack-1",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 39,
+    "fields": {
+      "login_code": "SO-Cuttack-2",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 40,
+    "fields": {
+      "login_code": "SO-Bhubaneswar-1",
+      "rbm_region": "RBM-PATNA"
+    }
+  },
+  {
+    "model": "employee_app.designation",
+    "pk": 41,
+    "fields": {
+      "login_code": "SO-Bhubaneswar-2",
+      "rbm_region": "RBM-PATNA"
+    }
+  }
+]

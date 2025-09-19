@@ -13,7 +13,7 @@
 
 #! Prathamesh
 from django.contrib import admin
-from .models import Employee, EmployeeLoginHistory, DoctorVideo, VideoTemplates, ImageContent, Brand
+from .models import Employee, EmployeeLoginHistory, DoctorVideo, VideoTemplates, ImageContent, Brand,Designation
 
 # Employee Admin
 @admin.register(Employee)
@@ -29,13 +29,12 @@ class EmployeeAdmin(admin.ModelAdmin):
             'fields': ('employee_id', 'first_name', 'last_name', 'email', 'phone')
         }),
         ('Work Details', {
-            'fields': ('department', 'city', 'user_type', 'rbm')
+            'fields': ('department', 'city', 'user_type', 'designation', 'rbm_region', 'rbm')
         }),
         ('Status & Dates', {
             'fields': ('status', 'has_logged_in', 'date_joined', 'login_date')
         }),
     )
-
 
 # Employee Login History Admin
 @admin.register(EmployeeLoginHistory)
@@ -63,10 +62,11 @@ class EmployeeLoginHistoryAdmin(admin.ModelAdmin):
 
 
 # DoctorVideo Admin
+# DoctorVideo Admin
 @admin.register(DoctorVideo)
 class DoctorVideoAdmin(admin.ModelAdmin):
-    list_display = ['name', 'clinic', 'city', 'state', 'specialization', 'employee', 'created_at', 'has_output_video', 'has_image_contents']
-    list_filter = ['city', 'state', 'specialization', 'employee', 'created_at']
+    list_display = ['name', 'clinic', 'city', 'state', 'specialization', 'mobile_number', 'employee_designation', 'employee_rbm', 'created_at', 'has_output_video', 'has_image_contents', 'duplicate_count', 'total_usage_count']
+    list_filter = ['city', 'state', 'specialization', 'employee', 'created_at', 'employee__designation', 'employee__rbm_region']
     search_fields = ['name', 'clinic', 'city', 'specialization', 'mobile_number']
     ordering = ['-created_at']
     readonly_fields = ['created_at']
@@ -95,7 +95,60 @@ class DoctorVideoAdmin(admin.ModelAdmin):
         return obj.image_contents.count() > 0
     has_image_contents.boolean = True
     has_image_contents.short_description = 'Has Generated Images'
+    
+    def duplicate_count(self, obj):
+        """Count how many other employees have this same doctor (by mobile number)"""
+        count = DoctorVideo.objects.filter(mobile_number=obj.mobile_number).exclude(id=obj.id).count()
+        return count
+    duplicate_count.short_description = 'Duplicate Doctors'
+    duplicate_count.admin_order_field = 'mobile_number'
 
+    def total_usage_count(self, obj):
+        """Count total image generations for this doctor"""
+        return obj.image_contents.count()
+    total_usage_count.short_description = 'Images Generated'
+    total_usage_count.admin_order_field = 'image_contents'
+    
+    def get_queryset(self, request):
+        """Optimize queryset with prefetch for better performance"""
+        return super().get_queryset(request).select_related('employee').prefetch_related('image_contents')
+
+    def changelist_view(self, request, extra_context=None):
+        """Add duplicate statistics to the changelist view"""
+        from django.db.models import Count
+        
+        # Get duplicate statistics
+        duplicate_stats = DoctorVideo.objects.values('mobile_number').annotate(
+            duplicate_count=Count('id')
+        ).filter(duplicate_count__gt=1).order_by('-duplicate_count')
+        
+        # Get most active doctors by image generation
+        active_doctors = DoctorVideo.objects.annotate(
+            image_count=Count('image_contents')
+        ).filter(image_count__gt=0).order_by('-image_count')[:10]
+        
+        extra_context = extra_context or {}
+        extra_context['duplicate_stats'] = duplicate_stats[:10]  # Top 10 duplicates
+        extra_context['active_doctors'] = active_doctors
+        extra_context['total_duplicates'] = sum(stat['duplicate_count'] - 1 for stat in duplicate_stats)
+        
+        return super().changelist_view(request, extra_context=extra_context)
+    
+    def employee_designation(self, obj):
+        """Show employee's designation (login ID)"""
+        if obj.employee:
+            return obj.employee.designation or obj.employee.employee_id
+        return "No Employee"
+    employee_designation.short_description = 'Created By'
+    employee_designation.admin_order_field = 'employee__designation'
+
+    def employee_rbm(self, obj):
+        """Show employee's RBM region"""
+        if obj.employee:
+            return obj.employee.rbm_region or "No RBM"
+        return "No Employee"
+    employee_rbm.short_description = 'RBM Region'
+    employee_rbm.admin_order_field = 'employee__rbm_region'
 
 
 # VideoTemplates Admin
@@ -194,6 +247,20 @@ class BrandAdmin(admin.ModelAdmin):
     list_filter = ('category', 'uploaded_by', 'uploaded_at')
     search_fields = ('name', 'uploaded_by__first_name', 'uploaded_by__last_name')
     ordering = ('category', 'name')
+
+
+
+@admin.register(Designation)
+class DesignationAdmin(admin.ModelAdmin):
+    list_display = ['login_code', 'rbm_region', 'employee_count', 'created_at']
+    list_filter = ['rbm_region', 'created_at']
+    search_fields = ['login_code', 'rbm_region']
+    ordering = ['rbm_region', 'login_code']
+    
+    def employee_count(self, obj):
+        """Count employees using this designation"""
+        return Employee.objects.filter(designation=obj.login_code).count()
+    employee_count.short_description = 'Employees Using'
 
 
 

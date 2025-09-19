@@ -88,7 +88,9 @@ from .models import (
     VideoTemplates,
     ImageContent,
     Brand,
+    Designation,
     # DoctorUsageHistory
+
 
 )
 
@@ -448,54 +450,119 @@ def get_tokens_for_employee(employee):
 @permission_classes([AllowAny])
 @api_view(['POST'])
 def employee_login_api(request):
-    serializer = EmployeeLoginSerializer(data=request.data)
-    if serializer.is_valid():
-        employee_id = serializer.validated_data['employee_id']
-        try:
-            employee = Employee.objects.get(employee_id=employee_id)
+    employee_id = request.data.get('employee_id')
+    rbm_region = request.data.get('rbm_region')
+    
+    if not employee_id or not rbm_region:
+        return Response({
+            'status': 'error',
+            'message': 'Both employee_id and rbm_region are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
-            if not employee.status:
-                return Response({
-                    'status': 'error',
-                    'message': 'Your account is inactive. Please contact the admin department.'
-                }, status=status.HTTP_403_FORBIDDEN)
+    try:
+        # Validate designation-RBM combination
+        designation = Designation.objects.get(login_code=employee_id, rbm_region=rbm_region)
+    except Designation.DoesNotExist:
+        return Response({
+            'status': 'error',
+            'message': f'Invalid combination: {employee_id} does not belong to {rbm_region}'
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
-            employee.login_date = timezone.now()
-            employee.has_logged_in = True
-            employee.save(update_fields=['login_date', 'has_logged_in'])
-
-            tokens = get_tokens_for_employee(employee)
-
-            EmployeeLoginHistory.objects.create(
-                employee=employee,
-                employee_identifier=employee.employee_id,
-                name=f"{employee.first_name} {employee.last_name}",
-                email=employee.email,
-                phone=employee.phone,
-                department=employee.department,
-                user_type=employee.user_type
-            )
-
+    try:
+        # Check if employee already exists
+        employee = Employee.objects.get(employee_id=employee_id)
+        
+        if not employee.status:
             return Response({
-                'status': 'success',
-                'message': 'Login successful',
-                'tokens': tokens,
-                'employee': {
-                    'id': employee.id,
-                    'employee_id': employee.employee_id,
-                    'name': f"{employee.first_name} {employee.last_name}",
-                    'email': employee.email,
-                    'department': employee.department,
-                    'first_name': employee.first_name,
-                    'last_name': employee.last_name or '',
-                    'user_type': employee.user_type
-                }
-            }, status=status.HTTP_200_OK)
+                'status': 'error',
+                'message': 'Your account is inactive. Please contact the admin department.'
+            }, status=status.HTTP_403_FORBIDDEN)
 
-        except Employee.DoesNotExist:
-            return Response({'status': 'error', 'message': 'Invalid employee ID'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Update employee with designation info
+        employee.designation = employee_id
+        employee.rbm_region = rbm_region
+        employee.login_date = timezone.now()
+        employee.has_logged_in = True
+        employee.save(update_fields=['designation', 'rbm_region', 'login_date', 'has_logged_in'])
 
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Employee.DoesNotExist:
+        # Create new employee if doesn't exist
+        employee = Employee.objects.create(
+            employee_id=employee_id,
+            first_name=employee_id.split('-')[0],  # Extract prefix as first name
+            designation=employee_id,
+            rbm_region=rbm_region,
+            user_type='Employee',
+            has_logged_in=True
+        )
+
+    tokens = get_tokens_for_employee(employee)
+
+    EmployeeLoginHistory.objects.create(
+        employee=employee,
+        employee_identifier=employee.employee_id,
+        name=f"{employee.first_name} {employee.last_name or ''}",
+        email=employee.email,
+        phone=employee.phone,
+        department=employee.department,
+        user_type=employee.user_type
+    )
+
+    return Response({
+        'status': 'success',
+        'message': 'Login successful',
+        'tokens': tokens,
+        'employee': {
+            'id': employee.id,
+            'employee_id': employee.employee_id,
+            'name': f"{employee.first_name} {employee.last_name or ''}",
+            'email': employee.email,
+            'department': employee.department,
+            'first_name': employee.first_name,
+            'last_name': employee.last_name or '',
+            'user_type': employee.user_type,
+            'designation': employee.designation,
+            'rbm_region': employee.rbm_region
+        }
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_rbm_regions(request):
+    """Get all unique RBM regions for dropdown"""
+    rbm_regions = Designation.objects.values_list('rbm_region', flat=True).distinct().order_by('rbm_region')
+    return Response({
+        'status': 'success',
+        'rbm_regions': list(rbm_regions)
+    }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def validate_designation(request):
+    """Validate if employee_id belongs to selected RBM region"""
+    employee_id = request.data.get('employee_id')
+    rbm_region = request.data.get('rbm_region')
+    
+    if not employee_id or not rbm_region:
+        return Response({
+            'status': 'error',
+            'message': 'Both employee_id and rbm_region are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        designation = Designation.objects.get(login_code=employee_id, rbm_region=rbm_region)
+        return Response({
+            'status': 'success',
+            'valid': True,
+            'message': f'{employee_id} belongs to {rbm_region}'
+        })
+    except Designation.DoesNotExist:
+        return Response({
+            'status': 'error',
+            'valid': False,
+            'message': f'{employee_id} does not belong to {rbm_region}'
+        })
 
 # ------------------------------------------------------------------------------
 # Doctors (base)
@@ -2046,7 +2113,6 @@ class DoctorSearchView(APIView):
             current_employee = Employee.objects.get(employee_id=employee_id)
         except Employee.DoesNotExist:
             return Response({"error": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
-
         # First check if current employee already has this doctor
         existing_doctor = DoctorVideo.objects.filter(
             mobile_number=mobile,

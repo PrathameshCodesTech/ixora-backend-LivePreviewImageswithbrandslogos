@@ -58,11 +58,14 @@ class DoctorVideoSerializer(serializers.ModelSerializer):
 
     def get_employee_name(self, obj):
         if obj.employee:
-            return f"{obj.employee.first_name} {obj.employee.last_name}".strip()
+            # Show designation (login ID) instead of full name
+            return obj.employee.designation or obj.employee.employee_id or f"{obj.employee.first_name} {obj.employee.last_name}".strip()
         return None
 
     def get_rbm_name(self, obj):
-        if obj.employee and obj.employee.rbm:
+        if obj.employee and obj.employee.rbm_region:
+            return obj.employee.rbm_region
+        elif obj.employee and obj.employee.rbm:
             return f"{obj.employee.rbm.first_name} {obj.employee.rbm.last_name}".strip()
         return None
 
